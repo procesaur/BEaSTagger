@@ -5,7 +5,6 @@ setup(
     version='0.99',
     packages=[],
     install_requires=[
-        'classla~=1.0.1',
         'torch~=1.8.1',
         'spacy~=3.0.6',
         'tqdm~=4.44.1',
@@ -17,7 +16,7 @@ setup(
     ],
     url='https://github.com/procesaur/BEaSTagger',
     license='GPL',
-    author='Mihailo',
+    author='Mihailo Škorić',
     author_email='procesaur@gmail.com',
     description='POS tagging tool based on Bidirectional, Expandable and Stacked architecture.'
 )
