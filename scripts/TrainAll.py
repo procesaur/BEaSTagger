@@ -27,10 +27,10 @@ spacy_traindir = "/train.spacy"
 spacy_devdir = "/dev.spacy"
 spacyR_traindir = "/trainR.spacy"
 spacyR_devdir = "/devR.spacy"
-stanza_traindir = "/train.stanza"
-stanza_devdir = "/dev.stanza"
-stanzaR_traindir = "/trainR.stanza"
-stanzaR_devdir = "/devR.stanza"
+# stanza_traindir = "/train.stanza"
+# stanza_devdir = "/dev.stanza"
+# stanzaR_traindir = "/trainR.stanza"
+# stanzaR_devdir = "/devR.stanza"
 
 # train in both directions (left context and right context taggers)
 bider = True
@@ -206,10 +206,10 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
             tempfiles.append(out_path + spacy_traindir)
             tempfiles.append(out_path + spacy_devdir)
 
-        if stanzatagger:
-            prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
-            tempfiles.append(out_path + stanza_traindir)
-            tempfiles.append(out_path + stanza_devdir)
+        # if stanzatagger:
+        #     prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
+        #     tempfiles.append(out_path + stanza_traindir)
+        #     tempfiles.append(out_path + stanza_devdir)
 
         if bider:
             rconlulines = rlines.copy()

@@ -1,2 +1,2 @@
-# Bidirectional Stacked Tagger
+# Bidirectional, Expandable and Stacked Tagger --- BEaST
  
