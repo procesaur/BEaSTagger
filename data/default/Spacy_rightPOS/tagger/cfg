@@ -1,0 +1,19 @@
+{
+  "labels":[
+    "A",
+    "ABB",
+    "ADV",
+    "CONJ",
+    "INT",
+    "N",
+    "NUM",
+    "PAR",
+    "PREF",
+    "PREP",
+    "PRO",
+    "PUNCT",
+    "SENT",
+    "V",
+    "X"
+  ]
+}
