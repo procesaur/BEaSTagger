@@ -1,6 +1,4 @@
-from tkinter import filedialog
-from tkinter import *
-
+import sys
 import numpy as np
 import pandas as pd
 import os
@@ -9,7 +7,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
-from itertools import product
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report
@@ -489,74 +486,6 @@ def probtagToMatrix(linest, taggershort, tags=None):
 
     return matrix, tagaccu, tagset, tagger_tags
 
-
-def tager_dist(csv, results):
-    tagsall = ([])
-    taggersall = ([])
-    matrix = {}
-    dic = {}
-    dist = {}
-
-    with open(csv, 'r', encoding='utf-8') as f:
-        lines = f.readlines()  # All lines including the blank ones
-
-    for i, tag in enumerate(lines[0].rstrip('\n').split('\t')):
-        if tag != 'result':
-            dic[i] = tag
-            tagsall.append(tag.split('__')[1])
-            taggersall.append(tag.split('__')[0])
-
-    lines.pop(0)
-
-    taggersall.append("target")
-
-    tagset = list(set(tagsall))
-    taggerset = list(set(taggersall))
-
-    for tagger in taggerset:
-        matrix[tagger] = {}
-        dist[tagger] = {}
-        for tag in tagset:
-            matrix[tagger][tag] = {}
-        for t2 in taggerset:
-            dist[tagger][t2] = 0.00
-
-    for i, line in enumerate(lines):
-        vals = line.split("\t")
-        for j, val in enumerate(vals):
-            head = dic[j].split("__")
-            matrix[head[0]][head[1]][i] = float(val)
-
-    for i, r in enumerate(results):
-        for tag in tagset:
-            if r == tag:
-                matrix["target"][tag][i] = 1
-            else:
-                matrix["target"][tag][i] = 0
-
-    for i, t, t1, t2 in product(range(0, len(lines)), tagset, taggerset, taggerset):
-        if matrix[t1][t] == {}:
-            v1 = 0
-        else:
-            v1 = matrix[t1][t][i]
-        if matrix[t2][t] == {}:
-            v2 = 0
-        else:
-            v2 = matrix[t2][t][i]
-        diff = abs(v1 - v2)
-        if diff > 0:
-            dist[t1][t2] += diff
-
-    print("\t"+"\t".join(taggerset))
-    for t1 in taggerset:
-        vals = ""
-        for t2 in taggerset:
-            vals += "\t"+str(dist[t1][t2])
-        print(t1+vals)
-
-    print(dist)
-
-
 def matrixworks(csv, tag_accu, tags, results, tagger_answers, probs, words=None):
     high_pos_t = 0
     high_pos_f = 0
@@ -587,11 +516,6 @@ def matrixworks(csv, tag_accu, tags, results, tagger_answers, probs, words=None)
     high = True
     jury = True
     xjury = False
-
-    Tk().withdraw()
-    if csv == "":
-        csv = filedialog.askopenfilename(initialdir="../data/tag-output", title="Select matrix file",
-                                         filetypes=(("matrix files", "*.csv *.mt"), ("all files", "*.*")))
 
     if words is not None:
         words = list(word.rstrip('\n') for word in words if word not in ['\n', '', '\0'])

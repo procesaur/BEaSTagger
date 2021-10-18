@@ -1,5 +1,3 @@
-from tqdm import tqdm
-
 def lexmagic(entries_u, entries_c, entries_l, lines, synonyms=None):
     origlines = lines.copy()
     rc = 0

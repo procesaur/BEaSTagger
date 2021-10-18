@@ -1,4 +1,4 @@
-from TrainAll import *
+from scripts.TrainAll import *
 
 # hide tkinterface
 Tk().withdraw()

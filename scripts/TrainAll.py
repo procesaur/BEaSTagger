@@ -1,11 +1,12 @@
-from pathlib import Path
 import random
+import os
+import sys
+import re
+import numpy as np
+
+from pathlib import Path
 from distutils.dir_util import copy_tree
 from distutils.dir_util import remove_tree
-import os
-import numpy as np
-from tkinter import filedialog
-from tkinter import *
 from spacy.training.loop import train as trainpos
 from spacy.training.initialize import init_nlp
 from spacy import util
@@ -17,9 +18,9 @@ from scripts.conversion import convert as conv
 from scripts.lexmagic import lexmagic
 from scripts.matrixworks import probtagToMatrix, train_prob_net
 
-from Classla.TrainClassla import train_stanza
+#from Classla.TrainClassla import train_stanza
 from SpacyTagger.getmap import gettagmap
-from TagAll import tag_any
+from scripts.TagAll import tag_any
 
 
 spacy_traindir = "/train.spacy"
@@ -51,8 +52,6 @@ spacygpu = 1  # -1 for cpu
 notrain = False
 hasfiles = False
 
-# hide tkinterface
-Tk().withdraw()
 
 tempfiles = ([])
 tempdirs = ([])
@@ -233,7 +232,7 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
     if treetagger:
         print("training TreeTagger")
         run = ' .\\"'
-        exe_path = "TreeTagger/bin/train-tree-tagger"
+        exe_path = "../TreeTagger/bin/train-tree-tagger"
 
         parametres = '-cl ' + str(cl) \
                      + ' -dtg ' + str(dtg) \
@@ -273,7 +272,7 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
         if not os.path.isdir(out_path + '/spacyTemp'):
             os.mkdir(out_path + '/spacyTemp')
 
-        cfgpath = Path("./SpacyTagger/config.cfg")
+        cfgpath = Path("../SpacyTagger/config.cfg")
 
         outpath = Path(out_path + "/spacyTemp")
         trainpath = out_path + spacy_traindir
@@ -307,25 +306,17 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
             tempdirs.append(out_path + '/spacyRTemp/')
             copy_tree(out_path + '/spacyRTemp/model-best', destdir)
 
-    if stanzatagger:
-        print("training Stanza tagger")
+    # if stanzatagger:
+        # print("training Stanza tagger")
+        # destdir = newdir + '/Stanza' + name
+        # if not os.path.isdir(destdir):
+        #     os.mkdir(destdir)
+        # if not os.path.isdir(out_path + '/StanzaTemp'):
+        #     os.mkdir(out_path + '/StanzaTemp')
 
-        wv_path = filedialog.askopenfilename(initialdir="./data/lexicon",
-                                             title="Select word vector file",
-                                             filetypes=(("vector files", "*.vec"), ("all files", "*.*")))
-        pretrain = filedialog.askopenfilename(initialdir="./data/lexicon",
-                                              title="Select pretrain stanza file",
-                                              filetypes=(("pretrianed files", "*.pt"), ("all files", "*.*")))
-
-        destdir = newdir + '/Stanza' + name
-        if not os.path.isdir(destdir):
-            os.mkdir(destdir)
-        if not os.path.isdir(out_path + '/StanzaTemp'):
-            os.mkdir(out_path + '/StanzaTemp')
-
-        train_stanza(wv_path, out_path + stanza_traindir, out_path + stanza_devdir, out_path+'/StanzaTemp', pretrain)
-        tempdirs.append(out_path + '/StanzaTemp')
-        copy_tree(out_path + '/StanzaTemp/model-best', destdir)
+        # train_stanza("", out_path + stanza_traindir, out_path + stanza_devdir, out_path+'/StanzaTemp', "")
+        # tempdirs.append(out_path + '/StanzaTemp')
+        # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
     return newdir, out_path + "/ten" + name
 
@@ -334,14 +325,6 @@ def train_super(path="", trainfile="", matrix="", name="default", taggers_array=
 
     global tempfiles
     global tempdirs
-
-    if path is "":
-        path = filedialog.askdirectory(initialdir="./data/output", title="Select composite tagger directory")
-
-    if trainfile is "":
-        trainfile = filedialog.askopenfilename(initialdir="./data/output", title="Select tagged file",
-                                               filetypes=(("text files", "*.tag *.tt *.txt *.lm"),
-                                                          ("all files", "*.*")))
 
     if matrix is "":
         if taggers_array is None:

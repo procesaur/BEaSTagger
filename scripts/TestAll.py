@@ -2,8 +2,8 @@ from tkinter import filedialog
 from tkinter import *
 import ntpath
 
-from TagAll import tag_complex
-from scripts.matrixworks import matrixworks, tager_dist
+from scripts.TagAll import tag_complex
+from scripts.matrixworks import matrixworks
 from scripts.lexmagic import lexmagic
 
 

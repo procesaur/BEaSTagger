@@ -1,19 +1,14 @@
 import os
 import ntpath
 import math
-import re
-
-from tkinter import filedialog
-from tkinter import *
-from tqdm import tqdm
 import numpy as np
-from ftfy import fix_text
+import re
 
 from scripts.conversion import convert as conv
 from scripts.lexmagic import lexmagic
 from TreeTagger.tag import tag_treetagger
 from SpacyTagger.TagSpacy import tag_spacytagger
-from Classla.TagClassla import tag_classla
+# from Classla.TagClassla import tag_classla
 from scripts.matrixworks import probtagToMatrix, test_prob_net
 from scripts.pipeline import tokenize, chunkses, segmentize, filechunkses
 
@@ -28,25 +23,9 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
     entriesfull = ([])
     lemdic = {}
 
-    Tk().withdraw()
     chunklines = 80000
     term_size = 50000000
-    # setting variables if unset
-    if file_paths == "":
-        file_paths = filedialog.askopenfilenames(initialdir="./data/training",
-                                                 title="Select text files",
-                                                 filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert"),
-                                                            ("all files", "*.*")))
-    if par_path == "":
-        par_path = filedialog.askdirectory(initialdir="./data/output", title="Select complex model directory")
 
-    if out_path == "":
-        out_path = filedialog.askdirectory(initialdir="./data/output", title="Select output directory")
-
-    if lex_path == "" and lexiconmagic:
-        lex_path = filedialog.askopenfilename(initialdir="./data/lexicon",
-                                              title="Select lexicon file",
-                                              filetypes=(("text files", "*.txt"), ("all files", "*.*")))
     if lex_path == "":
         lexiconmagic = False
 
@@ -131,7 +110,7 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
         if tokenization:
             print('tokenization...')
 
-            origlines = tokenize(paragraphs, MWU, out_path, par_path)
+            origlines = tokenize(paragraphs, out_path)
         else:
             try:
                 with open(file, 'r', encoding='utf-8') as f:
@@ -139,8 +118,7 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
 
             except:
                 with open(file, 'r', encoding='latin2') as f:
-                    fulltext = fix_text(f.read())
-                    origlines = fulltext.split('\n')
+                    origlines = f.readlines()
 
         exclusion = {}
         noslines = list(line.rstrip('\n') for line in origlines if line not in ['\n', ''])
@@ -224,7 +202,7 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
         taggedlinesall = ([])
 
         print("tagging with " + str(len(taggers_array)) + " taggers...")
-        for i, tr in tqdm(enumerate(targets)):
+        for tr in targets:
 
             tlines = ([])
             matrices = ([])
@@ -249,16 +227,6 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
             flat_tagset = [item for sublist in tagsets for item in sublist]
 
             tlines = ([])
-
-            if False:
-                for i in range(0,len(matrices)):
-                    with open(out_path + "/matrix-prob_tag"+str(i)+".csv", 'w', encoding='utf-8') as m:
-                        m.write('\t'.join(flat_tagset) + '\n')
-                        for idx, line in enumerate(matrices[i].transpose()):
-                            # m.write(words[idx] + '\t') we can write the words but dont need to
-                            # m.write(tags[idx] + '\t')
-                            np.savetxt(m, line[np.newaxis], delimiter='\t', fmt='%.4f')
-                    tempfiles.append(out_path + "/matrix-prob_tag"+str(i)+".csv")
 
             # print("building result martix...")
             matricout = np.concatenate(matrices, axis=0)
@@ -406,8 +374,7 @@ def tag_any(transliterate, lexiconmagic, tokenization, MWU, probability, onlyPOS
             except:
                 print('warning! mixed encoding...')
                 with open(file, 'r', encoding='latin2') as f:
-                    fulltext = fix_text(f.read())
-                    origlines = fulltext.split('\n')
+                    origlines = f.readlines()
 
         exclusion = {}
 
@@ -486,8 +453,8 @@ def tag_any(transliterate, lexiconmagic, tokenization, MWU, probability, onlyPOS
                 tag_treetagger(par_path, fx, out_path + '/temp3', probability, lemmat)
 
             # if classla
-            elif par_path.endswith("/sr"):
-                tag_classla(par_path, fx, out_path + '/temp3', probability, lemmat, False)
+            # elif par_path.endswith("/sr"):
+              #   tag_classla(par_path, fx, out_path + '/temp3', probability, lemmat, False)
 
             # if spacy tagger
             else:

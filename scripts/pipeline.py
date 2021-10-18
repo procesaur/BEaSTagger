@@ -1,16 +1,15 @@
 import os
 import re
 from pathlib import Path
-import spacy
-from tqdm import tqdm
 from scripts.tokenizer import rel_tokenize
-from ftfy import fix_text
+
 from spacy.tokens._serialize import DocBin
 from spacy.training.converters.conllu_to_docs import conllu_to_docs
 from spacy.cli.convert import _write_docs_to_file
 
+
 def prepare_spacy(conlulines, tempdirs, traindir, devdir):
-    #conlulines = list(word.rstrip('\n') for word in conlulines if word not in ['\n', '', '\0'])
+
     conllufile = "\n".join(conlulines)
     dox = [x for x in conllu_to_docs(conllufile, n_sents=10)]
     chunksize = len(dox) * 0.9
@@ -26,6 +25,7 @@ def prepare_spacy(conlulines, tempdirs, traindir, devdir):
     concatdocsToFile(spacy_dev, Path(devdir))
     tempdirs.append(traindir)
     tempdirs.append(devdir)
+
 
 def prepare_stanza(conlulines, tempdirs, traindir, devdir):
     conlulines = [string for string in conlulines if string != "\n"]
@@ -46,6 +46,7 @@ def prepare_stanza(conlulines, tempdirs, traindir, devdir):
 
     tempdirs.append(traindir)
     tempdirs.append(devdir)
+
 
 def makeconllu(lst, tagmap):
     # sentences sepparated by a double newline
@@ -104,7 +105,7 @@ def segmentize(file="", erase_newlines=True):
 
     except:
         with open(file, 'r', encoding='latin2') as f:
-            fulltext = fix_text(f.read())
+            fulltext = f.read()
 
     if erase_newlines:
         control = 12
@@ -123,28 +124,7 @@ def segmentize(file="", erase_newlines=True):
     return fulltext.split('\n'), len(fulltext)
 
 
-def tokenize(paragraphs, MWU=False, out_path="", par_path=""):
-    tokenizer = "reldi" #reldi, perl
-
-    if tokenizer == 'perl':
-
-        with open(out_path + "/tempy", 'w', encoding='utf-8') as w:
-            w.write('\n'.join(paragraphs))
-
-        perl = 'perl ./scripts/tokenize.pl -e -a ./data/abbreviations "' + out_path + "/tempy" + '"'
-        if MWU:
-            perl += ' | perl ./scripts/mwl-lookup.perl  -f ./data/mwls'
-
-        myCmd = perl + ' > "' + out_path + '/tempx"'
-        os.system(myCmd)
-
-        with open(out_path + '/tempx', 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-        os.remove(out_path + '/tempx')
-        os.remove(out_path + '/tempy')
-
-    else:
-        lines = rel_tokenize(paragraphs, out_path, 'sr')
-
+def tokenize(paragraphs, out_path=""):
+    lines = rel_tokenize(paragraphs, out_path, 'sr')
     os.remove(out_path + '/tempw')
     return lines
