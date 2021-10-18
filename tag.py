@@ -5,10 +5,8 @@ from tkinter import Tk, filedialog as fd
 
 def main(files=None, model="./data/default", out_path="./data/output", lex_path="./data/lexicon/default",
          transliterate=True, lexiconmagic=True, tokenize=True, MWU=False,
-         onlyPOS=False, lemmat=True, lempos=False, modelnames=None, lemmatizers={}):
+         onlyPOS=False, lemmat=True, lempos=False, modelnames=[], lemmatizers={}):
 
-    if modelnames is None:
-        modelnames = []
     if not files:
         Tk().withdraw()
         files = fd.askopenfilenames(initialdir="./data/training", title="Select tagged text files",
@@ -19,9 +17,15 @@ def main(files=None, model="./data/default", out_path="./data/output", lex_path=
             if m.endswith(".pt"):
                 modelnames.append(m)
 
+    lexicons = os.listdir("./data/lexicon/")
+
     if lemmat and not lemmatizers:
         for model in modelnames:
-            lemmatizers[model] = lex_path
+            for lexicon in lexicons:
+                if "_" + model in lexicon:
+                    lemmatizers[model] = lexicon
+            if not lemmatizers[model]:
+                lemmatizers[model] = lex_path
 
     for f in files:
         tag_complex(model, lex_path, [f], out_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS, None,

@@ -87,8 +87,8 @@ def sentence_split_nonstd(tokens, lang):
         if token[0] in '.!?…':  # if sentence ending punctuation
             boundaries.append(index + 1)
         elif token.endswith('.'):  # if abbreviation
-            if token.lower() not in abbrevs[lang]['N']:  # if not in non-splitting abbreviations
-                if token.lower() in abbrevs[lang]['S']:  # if in splitting abbreviations
+            if token.lower() not in abbrevs[lang]['N']:  # if not in non-splitting abbreviationx
+                if token.lower() in abbrevs[lang]['S']:  # if in splitting abbreviationx
                     boundaries.append(index + 1)
                 elif len(token) > 2:
                     if tokens[index + 1][0][0].isupper():  # else if next is uppercase

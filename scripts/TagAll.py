@@ -15,7 +15,8 @@ from scripts.pipeline import tokenize, chunkses, segmentize, filechunkses
 
 def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmagic=False, transliterate=True,
                 tokenization=True, MWU=False, onlyPOS=False, results=None, lemmat=False, testing=False,
-                models=["net-prob.pt"], lemmatizers={}, lempos=False):
+                models=[], lemmatizers={}, lempos=False):
+
     tempfiles = ([])
     entries_u = ([])
     entries_c = ([])
