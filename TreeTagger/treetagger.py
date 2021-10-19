@@ -31,9 +31,24 @@ def tag_treetagger(par_path, file_path, out_path, probability, lemmat):
 
     args.append(out_path)
 
-    mycmd = ' '.join(args)
-    #print(mycmd)
-    # run tagger
-    #os.system(mycmd)
+    with open(os.devnull, 'wb') as devnull:
+        check_call(args, stdout=devnull, stderr=STDOUT)
+
+
+def train_treetagger(params, lex_path, oc_path, in_path, out_path):
+    args = ([])
+    ext = ""
+    if isWindows():
+        ext = ".exe"
+
+    args.append("./TreeTagger/bin/train-tree-tagger" + ext)
+    args.append(lex_path)
+    args.append(oc_path)
+    args.append(in_path)
+    args.append(out_path)
+
+    for param in params:
+        args.append(param)
+
     with open(os.devnull, 'wb') as devnull:
         check_call(args, stdout=devnull, stderr=STDOUT)

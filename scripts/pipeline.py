@@ -1,5 +1,6 @@
 import os
 import re
+import math
 from pathlib import Path
 from scripts.tokenizer import rel_tokenize
 
@@ -128,3 +129,146 @@ def tokenize(paragraphs, out_path=""):
     lines = rel_tokenize(paragraphs, out_path, 'sr')
     os.remove(out_path + '/tempw')
     return lines
+
+
+def lexentries(lex_path):
+    with open(lex_path, 'r', encoding='utf-8') as lex:
+        entriesfull = [wordx.split('\t')[0] for wordx in lex.readlines()]
+
+    entries_c = [wordx for wordx in entriesfull if wordx[0].isupper()]
+    entries_l = [wordx for wordx in entriesfull if not wordx[0].isupper()]
+    entries_u = [wordx for wordx in entries_c if wordx.isupper()]
+    entries_c += [wordx for wordx in entries_c if not wordx.isupper()]
+
+    del entriesfull
+    return entries_u, entries_c, entries_l
+
+
+def lemmas_dic(lemmatizers):
+    lemdic = {}
+    for modell in lemmatizers.keys():
+        lemdic[modell] = {}
+        with open(lemmatizers[modell], 'r', encoding='utf-8') as d:
+            diclines = d.readlines()
+
+        for d in diclines:
+            tabs = d.split("\t")
+            ent = tabs[0]
+            lemdic[modell][ent] = {}
+            del tabs[0]
+            for t in tabs:
+                try:
+                    lemdic[modell][ent][t.split(" ")[0]] = t.split(" ")[1].rstrip()
+                except:
+                    pass
+    return lemdic
+
+
+def big_chunkus(filex, out_path, terminal_size=50000000):
+    files = ([])
+    filesmap = {}
+
+    paragraphs, total = segmentize(filex)
+    fn = math.ceil(os.path.getsize(filex) / terminal_size)
+    if len(paragraphs) < fn + 1:
+        fn = len(paragraphs)
+    if fn > 1:
+        print("huge file - splitting")
+        filechunks = filechunkses(paragraphs, fn, total)
+        print("writing " + str(fn) + " chunks to disk")
+
+        for i, c in enumerate(filechunks):
+            if i != fn:
+                fname = out_path + "/" + os.path.basename(filex) + '___' + str(i)
+                with open(fname, 'w', encoding='utf-8') as temp:
+                    temp.write('\n'.join(c))
+                files.append(fname)
+                filesmap[fname] = filex
+            else:
+                fname = out_path + "/" + os.path.basename(filex) + '___' + str(i - 1)
+                with open(fname, 'a', encoding='utf-8') as temp:
+                    temp.write('\n'.join(c))
+
+        del filechunks
+
+    else:
+        files.append(filex)
+        filesmap[filex] = filex
+
+    del paragraphs
+    return files, filesmap
+
+
+def rem_xml(lines):
+    exclusion = {}
+    noslines = list(line.rstrip('\n') for line in lines if line not in ['\n', ''])
+
+    for idx, line in enumerate(noslines):
+        if re.match(r"^.*<!--.*$|^.*-->.*$|^.*<.*>.*$", line):
+            exclusion[idx] = line
+    del noslines
+
+    origlines = [line.rstrip('\n') for line in lines if not re.match(r"^.*<!--.*$|^.*-->.*$|^.*<.*>.*$", line)]
+
+    newlines = origlines.copy()
+    origlines = list(line.rstrip('\n') for line in origlines if line not in ['\n', '', '\0'])
+
+    return newlines, origlines, exclusion
+
+
+def write_chunks(lines, out_path, chunklines=80000, testing=False, results=None):
+    targets = ([])
+    if len(lines) < chunklines or testing:
+        with open(out_path + '/tempx2', 'w', encoding='utf-8') as temp:
+            temp.write('\n'.join(lines))
+        targets.append(out_path + '/tempx2')
+    else:
+        print('chunking...')
+
+        if results is None:
+            alltext = '\n'.join(lines)
+            alltext = alltext.rstrip('\n')
+            sents = alltext.split('\n\n')
+            for i, s in enumerate(sents):
+                sents[i] = s + '\n'
+        else:
+            for i, w in enumerate(lines):
+                if results[i] == 'SENT':
+                    lines[i] = w + 'SENT'
+
+            alltext = '\n'.join(lines)
+            alltext = alltext.rstrip('SENT')
+            sents = alltext.split('SENT')
+
+        chunkn = round(len(lines) / chunklines)
+        chunkovi = chunkses(sents, round(len(sents) / chunkn))
+
+        del alltext
+        del sents
+
+        for i, c in enumerate(chunkovi):
+            with open(out_path + '/prepared' + str(i), 'w', encoding='utf-8') as temp:
+                temp.write('\n'.join(c))
+            targets.append(out_path + '/prepared' + str(i))
+
+        del chunkovi
+        print(str(len(targets)) + " chunks created")
+    return targets
+
+
+def get_taggers(path):
+    taggers_array = ([])
+    taggers_arr = os.listdir(path)
+
+    par_file = ""
+    for t in taggers_arr:
+        if '.par' in t or 'Spacy' in t:
+            taggers_array.append(t)
+        if '.par' in t and par_file == "":
+            par_file = t
+        if 'TreeTagger.par' in t:
+            par_file = t
+        if t.endswith('sr'):
+            taggers_array.append(t)
+
+    return taggers_array

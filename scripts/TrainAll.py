@@ -1,25 +1,22 @@
 import random
 import os
-import sys
 import re
 import numpy as np
 
 from pathlib import Path
-from distutils.dir_util import copy_tree
-from distutils.dir_util import remove_tree
-from spacy.training.loop import train as trainpos
-from spacy.training.initialize import init_nlp
-from spacy import util
 
+from distutils.dir_util import remove_tree
 from scripts.pipeline import prepare_spacy
-from scripts.pipeline import prepare_stanza
+# from scripts.pipeline import prepare_stanza
 from scripts.pipeline import makeconllu
 from scripts.conversion import convert as conv
 from scripts.lexmagic import lexmagic
 from scripts.matrixworks import probtagToMatrix, train_prob_net
 
-#from Classla.TrainClassla import train_stanza
-from SpacyTagger.getmap import gettagmap
+# from Classla.TrainClassla import train_stanza
+from SpacyTagger.spacyworks import train_spacy
+from SpacyTagger.spacyworks import gettagmap
+from TreeTagger.treetagger import train_treetagger
 from scripts.TagAll import tag_any
 
 
@@ -62,9 +59,15 @@ dtg = 0.1  # decision tree gain
 ecw = 0.2  # eq. class weight
 atg = 1.1  # affix tree gain
 sw = 16  # smoothing weight
+parameters = ['-cl ' + str(cl),
+              '-dtg ' + str(dtg),
+              '-ecw ' + str(ecw),
+              '-atg ' + str(atg),
+              '-sw ' + str(sw),
+              '-lt 0.001 -quiet']
 
 
-def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newdir="ZTagger"):
+def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newdir="newBEaST"):
 
     newdir = out_path + "/" + newdir
 
@@ -231,80 +234,36 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
     # TreeTagger training
     if treetagger:
         print("training TreeTagger")
-        run = ' .\\"'
-        exe_path = "../TreeTagger/bin/train-tree-tagger"
-
-        parametres = '-cl ' + str(cl) \
-                     + ' -dtg ' + str(dtg) \
-                     + ' -ecw ' + str(ecw) \
-                     + ' -atg ' + str(atg) \
-                     + ' -sw ' + str(sw) \
-                     + ' -lt 0.001 -quiet'
-
-        trainpaths = run + exe_path + '" "' \
-                     + lex_path + '" "' \
-                     + oc_path + '" "' \
-                     + out_path + '/TreeTagger_train" "' \
-                     + newdir + '/TreeTagger' + name + '.par" '
-
-        myCmd = trainpaths + parametres
-        # print(myCmd)
-        os.system(myCmd)
+        tt_in_path = out_path + '/TreeTagger_train'
+        tt_out_path = newdir + '/TreeTagger' + name + '_right.par'
+        train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path)
 
         if bider:
-            trainpaths = run + exe_path + '" "' \
-                         + lex_path + '" "' \
-                         + oc_path + '" "' \
-                         + out_path + '/TreeTaggerR_train" "' \
-                         + newdir + '/TreeTagger' + name + '_right.par" '
-
-            myCmd = trainpaths + parametres
-            # print(myCmd)
-            os.system(myCmd)
+            tt_in_path = out_path + '/TreeTaggerR_train'
+            tt_out_path = newdir + '/TreeTagger' + name + '_right.par'
+            train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path)
 
     # Spacy Tagger training
     if spacytagger:
         print("training Spacy Tagger")
 
-        destdir = newdir + '/Spacy' + name
-        if not os.path.isdir(destdir):
-            os.mkdir(destdir)
-        if not os.path.isdir(out_path + '/spacyTemp'):
-            os.mkdir(out_path + '/spacyTemp')
-
+        spacy_destdir = newdir + '/Spacy' + name
+        spacy_outpath = Path(out_path + "/spacyTemp")
         cfgpath = Path("../SpacyTagger/config.cfg")
-
-        outpath = Path(out_path + "/spacyTemp")
         trainpath = out_path + spacy_traindir
         devpath = out_path + spacy_devdir
+        tempdirs.append(spacy_outpath)
 
-        config = util.load_config(cfgpath, interpolate=False)
-        config["paths"]["train"] = trainpath
-        config["paths"]["dev"] = devpath
-        nlp = init_nlp(config, use_gpu=spacygpu)
-        trainpos(nlp, outpath, use_gpu=spacygpu, stdout=sys.stdout, stderr=sys.stderr)
-
-        tempdirs.append(out_path + '/spacyTemp/')
-        copy_tree(out_path + '/spacyTemp/model-best', destdir)
+        train_spacy(cfgpath, trainpath, devpath, spacy_outpath, spacy_destdir)
 
         if bider:
-            destdir = newdir + '/Spacy' + name + '_right'
-            if not os.path.isdir(destdir):
-                os.mkdir(destdir)
-            if not os.path.isdir(out_path + '/spacyRTemp'):
-                os.mkdir(out_path + '/spacyRTemp')
-
-            outpath = Path(out_path + "/spacyRTemp")
+            spacy_destdir = newdir + '/Spacy' + name + '_right'
+            spacy_outpath = Path(out_path + "/spacyRTemp")
             trainpath = out_path + spacyR_traindir
             devpath = out_path + spacyR_devdir
-
-            config["paths"]["train"] = trainpath
-            config["paths"]["dev"] = devpath
-            nlp = init_nlp(config, use_gpu=spacygpu)
-            trainpos(nlp, outpath, use_gpu=spacygpu, stdout=sys.stdout, stderr=sys.stderr)
-
             tempdirs.append(out_path + '/spacyRTemp/')
-            copy_tree(out_path + '/spacyRTemp/model-best', destdir)
+
+            train_spacy(cfgpath, trainpath, devpath, spacy_outpath, spacy_destdir)
 
     # if stanzatagger:
         # print("training Stanza tagger")

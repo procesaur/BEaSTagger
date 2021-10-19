@@ -20,12 +20,12 @@ def main(files=None, model="./data/default", out_path="./data/output", lex_path=
     lexicons = os.listdir("./data/lexicon/")
 
     if lemmat and not lemmatizers:
-        for model in modelnames:
+        for modelx in modelnames:
             for lexicon in lexicons:
-                if "_" + model in lexicon:
-                    lemmatizers[model] = lexicon
-            if not lemmatizers[model]:
-                lemmatizers[model] = lex_path
+                if "_" + modelx in lexicon:
+                    lemmatizers[modelx] = lexicon
+            if modelx not in lemmatizers:
+                lemmatizers[modelx] = lex_path
 
     for f in files:
         tag_complex(model, lex_path, [f], out_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS, None,
@@ -34,4 +34,3 @@ def main(files=None, model="./data/default", out_path="./data/output", lex_path=
 
 if __name__ == "__main__":
     main()
-

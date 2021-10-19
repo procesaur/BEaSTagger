@@ -1,8 +1,13 @@
 import spacy
-import sys
 from spacy.tokens import Doc
+from spacy.training.loop import train as trainpos
+from spacy.training.initialize import init_nlp
+from spacy import util
+
+import os
 import sys
 from unicodedata import category
+from distutils.dir_util import copy_tree
 
 from spacy.pipeline.tagger import Tagger
 
@@ -87,3 +92,59 @@ def tag_spacytagger(par_path, file_path, out_path, probability, lemmat, tokenize
                 print(token.text + tokprob + lemma)
 
         sys.stdout = original
+
+def gettagmap(uniqpos):
+    tagdic = {}
+    for p in uniqpos:
+        if 'PUN' in p or 'SENT' in p:
+            tagdic[p] = 'PUNCT'
+        elif 'ADJ' in p or p == 'A' or 'A:' in p:
+            tagdic[p] = 'ADJ'
+        elif 'ADP' in p or 'PRE' in p:
+            tagdic[p] = 'ADP'
+        elif 'ADV' in p:
+            tagdic[p] = 'ADV'
+        elif 'AUX' in p:
+            tagdic[p] = 'AUX'
+        elif 'CON' in p:
+            tagdic[p] = 'CONJ'
+        elif 'DET' in p:
+            tagdic[p] = 'DET'
+        elif 'INT' in p:
+            tagdic[p] = 'INTJ'
+        elif 'NOUN' in p or p == 'N' or 'N:' in p:
+            tagdic[p] = 'NOUN'
+        elif 'NUM' in p:
+            tagdic[p] = 'NUM'
+        elif 'PAR' in p:
+            tagdic[p] = 'PART'
+        elif 'PROP' in p:
+            tagdic[p] = 'PROPN'
+        elif 'PRO' in p:
+            tagdic[p] = 'PRON'
+        elif 'SCON' in p:
+            tagdic[p] = 'SCONJ'
+        elif 'SYM' in p:
+            tagdic[p] = 'SYM'
+        elif 'VERB' in p or p == 'V' or 'V:' in p:
+            tagdic[p] = 'VERB'
+        elif 'SPA' in p:
+            tagdic[p] = 'SPACE'
+        else:
+            tagdic[p] = 'X'
+    return tagdic
+
+
+def train_spacy(cfgpath, trainpath, devpath, temp, destdir, spacygpu):
+    if not os.path.isdir(destdir):
+        os.mkdir(destdir)
+    if not os.path.isdir(temp):
+        os.mkdir(temp)
+
+    config = util.load_config(cfgpath, interpolate=False)
+    config["paths"]["train"] = trainpath
+    config["paths"]["dev"] = devpath
+    nlp = init_nlp(config, use_gpu=spacygpu)
+    trainpos(nlp, temp, use_gpu=spacygpu, stdout=sys.stdout, stderr=sys.stderr)
+
+    copy_tree(temp + '/model-best', destdir)

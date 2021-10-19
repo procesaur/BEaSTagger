@@ -1,4 +1,6 @@
-from scripts.TrainAll import *
+from scripts.TrainAll import train_taggers, train_super
+from tkinter import Tk, filedialog as fd
+
 
 # hide tkinterface
 Tk().withdraw()
@@ -11,12 +13,12 @@ pretrained = True
 if not pretrained:
     # select files that will be used for training >>>
     # training data (*format *WORD \t POS1 \t POS2 \t ... LEMMA\n )
-    file_path = filedialog.askopenfilename(initialdir="./data/training", title="Select tagged text files",
+    file_path = fd.askopenfilename(initialdir="./data/training", title="Select tagged text files",
                                            filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
                                                       ("all files", "*.*")))
 
     # output directory select
-    out_path = filedialog.askdirectory(initialdir="./data/output",
+    out_path = fd.askdirectory(initialdir="./data/output",
                                        title="Select par output directory")
 
     tagsets = {}
