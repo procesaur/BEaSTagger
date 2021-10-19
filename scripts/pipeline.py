@@ -1,6 +1,7 @@
 import os
 import re
 import math
+import random
 from pathlib import Path
 from scripts.tokenizer import rel_tokenize
 
@@ -272,3 +273,73 @@ def get_taggers(path):
             taggers_array.append(t)
 
     return taggers_array
+
+
+def ratio_split(ratio, lines):
+    count_sen = 0
+    # remove new lines form the end of each line, because they are an array now
+    for i, line in enumerate(lines):
+        lines[i] = line.rstrip('\n')
+        # check if line is empty, increase, sentence counter
+        if lines[i] == "":
+            count_sen += 1
+
+    # check if text is split to sentences (is there count_sen), if not try to split by SENT tag.
+    if count_sen < 1:
+        # now add newline after each SENT, we are trying to break text into sentences
+        for i, line in enumerate(lines):
+            if 'SENT' in line:
+                lines[i] = lines[i] + '\n'
+    # create sentence array
+    text = re.sub(r'\n\n+', '\n\n', '\n'.join(lines)).strip()
+    sentences = text.split('\n\n')
+    # we set chunk sizes to X% of text - this will be used for training
+    chunksize = len(sentences) * ratio
+
+    # strip any extra newlines
+    for i, sent in enumerate(sentences):
+        if sent.endswith('\n'):
+            sentences[i] = sent.rstrip('\n')
+
+    # randomly shuffle sentences to get unbiased corpora
+    random.shuffle(sentences)
+    # initialize are chunks
+    train = ([])
+    tune = ([])
+    # add first 90% of sentences to "ninety" array, and the rest to "ten" array
+    for i, sent in enumerate(sentences):
+        if i < chunksize:
+            train.append(sent + "\n\n")
+        else:
+            tune.append(sent + "\n\n")
+
+    return train, tune
+
+
+def training_prep(file):
+    tagsets = {}
+    with open(file, 'r', encoding='utf-8') as fl:
+        lines = fl.readlines()  # all lines including the blank ones
+
+    meta = lines[0].rstrip().split("\t")
+    colsn = len(meta)
+    del lines[0]
+
+    newline = ""
+    for i in range(1, colsn):
+        newline += "\t"
+    newline += "\n"
+
+    lemacol = -1
+    for i, m in enumerate(meta):
+        if i > 0:
+            if m != "lemma" and m != "lema":
+                tagsets[m] = i
+            else:
+                lemacol = i
+
+    for i, line in enumerate(lines):
+        if line in ['\n', '', '\0', newline]:
+            lines[i] = '\n'
+
+    return lines, lemacol, tagsets, newline, colsn

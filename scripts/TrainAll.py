@@ -1,23 +1,20 @@
-import random
 import os
-import re
 import numpy as np
 
 from pathlib import Path
-
 from distutils.dir_util import remove_tree
-from scripts.pipeline import prepare_spacy
+
+from scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split
 # from scripts.pipeline import prepare_stanza
-from scripts.pipeline import makeconllu
 from scripts.conversion import convert as conv
 from scripts.lexmagic import lexmagic
 from scripts.matrixworks import probtagToMatrix, train_prob_net
+from scripts.TagAll import tag_any
 
 # from Classla.TrainClassla import train_stanza
 from SpacyTagger.spacyworks import train_spacy
 from SpacyTagger.spacyworks import gettagmap
 from TreeTagger.treetagger import train_treetagger
-from scripts.TagAll import tag_any
 
 
 spacy_traindir = "/train.spacy"
@@ -39,8 +36,6 @@ treetagger = True
 spacytagger = True
 # train Stanza
 stanzatagger = False
-# split data to train and test set
-split9to1 = True
 # slit ratio (0 to 1)
 ratio = 0.85
 # use gpu
@@ -48,7 +43,6 @@ spacygpu = 1  # -1 for cpu
 # skip to composite
 notrain = False
 hasfiles = False
-
 
 tempfiles = ([])
 tempdirs = ([])
@@ -67,14 +61,7 @@ parameters = ['-cl ' + str(cl),
               '-lt 0.001 -quiet']
 
 
-def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newdir="newBEaST"):
-
-    newdir = out_path + "/" + newdir
-
-    entries_u = ([])
-    entries_c = ([])
-    entries_l = ([])
-    entriesfull = ([])
+def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
 
     global tempfiles
     global tempdirs
@@ -85,73 +72,30 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
         for i, line in enumerate(lines):
             lines[i] = conv(line, 'CYRtoLAT')
 
-    # Some lexicon magic (might take a while, based on file sizes)
     # This procedure changes the training dataset based of a lexicon
     if lexiconmagic:
-        with open(lex_path, 'r', encoding='utf-8') as lex:
-            entriesfull += [wordx.split('\t')[0] for wordx in lex.readlines()]
-        entries_c += [wordx for wordx in entriesfull if wordx[0].isupper()]
-        entries_l += [wordx for wordx in entriesfull if not wordx[0].isupper()]
-        entries_u += [wordx for wordx in entries_c if wordx.isupper()]
-        entries_c += [wordx for wordx in entries_c if not wordx.isupper()]
-
-        del entriesfull
+        # load all possible words from the lexicon (in uppercase, capitalized and lowercase)
+        entries_u, entries_c, entries_l = lexentries(lex_path)
         # convert using lexicon magic
         lines, orliglineslm = lexmagic(set(entries_u), set(entries_c), set(entries_l), lines)
         # save lexicon magic
 
-    count_sen = 0
-    # remove new lines form the end of each line, because they are an array now
-    for i, line in enumerate(lines):
-        lines[i] = line.rstrip('\n')
-        # check if line is empty, increase, sentence counter
-        if lines[i] == "":
-            count_sen += 1
+    train, tune = ratio_split(ratio, lines)
 
-    # shuffle dataset and split 9:1
-    if split9to1:
-        # check if text is split to sentences (is there count_sen), if not try to split by SENT tag.
-        if count_sen < 1:
-            # now add newline after each SENT, we are trying to break text into sentences
-            for i, line in enumerate(lines):
-                if 'SENT' in line:
-                    lines[i] = lines[i] + '\n'
-        # create sentence array
-        text = re.sub(r'\n\n+', '\n\n', '\n'.join(lines)).strip()
-        sentences = text.split('\n\n')
-        # we set chunk sizes to X% of text - this will be used for training
-        chunksize = len(sentences) * ratio
+    # now read the lines from the "train" set, we will use this for training from now on
+    lines = ''.join(train).rstrip('\n').split('\n')
 
-        # strip any extra newlines
-        for i, sent in enumerate(sentences):
-            if sent.endswith('\n'):
-                sentences[i] = sent.rstrip('\n')
-
-        # randomly shuffle sentences to get unbiased corpora
-        random.shuffle(sentences)
-        # initialize are chunks
-        ninety = ([])
-        ten = ([])
-        # add first 90% of sentences to "ninety" array, and the rest to "ten" array
-        for i, sent in enumerate(sentences):
-            if i < chunksize:
-                ninety.append(sent + "\n\n")
-            else:
-                ten.append(sent + "\n\n")
-        # now read the lines from the "ninety" set, we will use this for training from now on
-        lines = ''.join(ninety).rstrip('\n').split('\n')
-
-        with open(out_path + "/ten" + name, 'w', encoding='utf8') as tf:
-            tf.write(''.join(ten).rstrip('\n'))
+    with open(out_path + "/tune" + name, 'w', encoding='utf8') as tf:
+        tf.write(''.join(tune).rstrip('\n'))
 
     # Create inverted set > copy "lines" and reverse their order
     if bider:
         rlines = lines.copy()
         rlines.reverse()
 
+    print("preparing...")
     # Treetagger files preparation
     if treetagger:
-        print('TreeTagger preparing...')
         # for treetagger we save lines as is, separated by newlines
         with open(out_path + '/TreeTagger_train', 'w', encoding='utf-8') as tr:
             tr.write('\n'.join(lines))
@@ -181,12 +125,6 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
 
     # SpacyTagger files preparation - Stanza file preparation
     if spacytagger or stanzatagger:
-        whatsprep = "Spacy and Stanza"
-        if not spacytagger:
-            whatsprep = "Stanza"
-        if not stanzatagger:
-            whatsprep = "Spacy"
-        print(whatsprep + ' Tagger preparing...')
 
         # create tagmap using array of unique pos. this is a spacy necessity
         tagmap = gettagmap(uniquepos)
@@ -277,10 +215,10 @@ def train_taggers(lines, out_path, lex_path="", lexiconmagic=True, name="", newd
         # tempdirs.append(out_path + '/StanzaTemp')
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
-    return newdir, out_path + "/ten" + name
+    return out_path + "/tune" + name
 
 
-def train_super(path="", trainfile="", matrix="", name="default", taggers_array=None,):
+def train_super(path, trainfile, name="default", matrix="", taggers_array=None,):
 
     global tempfiles
     global tempdirs
@@ -328,8 +266,7 @@ def train_super(path="", trainfile="", matrix="", name="default", taggers_array=
         for tagger in taggers_array:
             tlines = ([])
             for target in targets:
-                tlines += tag_any(False, False, False, False, True, False, False,
-                                  [target], tagger, path, False, "", False)
+                tlines += tag_any(target, tagger, path)
 
             mat, accu, tagset, taggert = probtagToMatrix(tlines, tagger.split('/')[-1], tags)
             matrices.append(mat)

@@ -3,9 +3,13 @@ import os
 from tkinter import Tk, filedialog as fd
 
 
-def main(files=None, model="./data/default", out_path="./data/output", lex_path="./data/lexicon/default",
+def main(files=None, model="./data/default", out_path="./data/output", lexicons_path="./data/lexicon/",
          transliterate=True, lexiconmagic=True, tokenize=True, MWU=False,
          onlyPOS=False, lemmat=True, lempos=False, modelnames=[], lemmatizers={}):
+
+    # initiate lexicons
+    lexicons = os.listdir(lexicons_path)
+    lex_path = lexicons_path + "default"
 
     if not files:
         Tk().withdraw()
@@ -17,13 +21,12 @@ def main(files=None, model="./data/default", out_path="./data/output", lex_path=
             if m.endswith(".pt"):
                 modelnames.append(m)
 
-    lexicons = os.listdir("./data/lexicon/")
-
     if lemmat and not lemmatizers:
         for modelx in modelnames:
+            tagset = modelx.split('.')[0].lower()
             for lexicon in lexicons:
-                if "_" + modelx in lexicon:
-                    lemmatizers[modelx] = lexicon
+                if "_" + tagset in lexicon.lower():
+                    lemmatizers[modelx] = lexicons_path + lexicon
             if modelx not in lemmatizers:
                 lemmatizers[modelx] = lex_path
 
