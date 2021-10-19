@@ -5,7 +5,7 @@ from tkinter import Tk, filedialog as fd
 
 
 def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1, lex_paths={},
-         lexicons_path="./data/lexicon/", tune_ratio=0.9, beast_dir="/data/output/newBEaST", tunepaths={}):
+         lexicons_path="./data/lexicon/", tune_ratio=0.9, beast_dir="./data/output/newBEaST", tunepaths={}):
 
     # initiate lexicons
     lexicons = os.listdir(lexicons_path)
@@ -34,7 +34,7 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1
         if lex_paths == {}:
             for tagset in tagsets.keys():
                 for lexicon in lexicons:
-                    if "_" + tagset in lexicon:
+                    if "_" + tagset.lower() in lexicon.lower():
                         lex_paths[tagset] = lexicons_path + lexicon
                 if tagset not in lex_paths:
                     lex_paths[tagset] = lex_path
@@ -60,6 +60,8 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1
 
             # train
             tunepaths[tagset] = train_taggers(xlines, out_path, lex_paths[tagset], "_" + tagset, beast_dir, tune_ratio)
+
+        for tagset in tagsets.keys():
             train_super(beast_dir, tunepaths[tagset], tagset)
 
     else:

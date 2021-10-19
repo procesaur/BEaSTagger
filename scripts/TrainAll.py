@@ -26,24 +26,6 @@ spacyR_devdir = "/devR.spacy"
 # stanzaR_traindir = "/trainR.stanza"
 # stanzaR_devdir = "/devR.stanza"
 
-# train in both directions (left context and right context taggers)
-bider = True
-# transfer all cyrilic to latin
-transliterate = True
-# train TreeTagger
-treetagger = True
-# train Spacy tagger
-spacytagger = True
-# train Stanza
-stanzatagger = False
-# slit ratio (0 to 1)
-ratio = 0.85
-# use gpu
-spacygpu = 1  # -1 for cpu
-# skip to composite
-notrain = False
-hasfiles = False
-
 tempfiles = ([])
 tempdirs = ([])
 
@@ -58,10 +40,11 @@ parameters = ['-cl ' + str(cl),
               '-ecw ' + str(ecw),
               '-atg ' + str(atg),
               '-sw ' + str(sw),
-              '-lt 0.001 -quiet']
+              '-lt 0.001']#              '-quiet']
 
 
-def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
+def train_taggers(lines, out_path, lex_path, name, newdir, ratio=0.9, lexiconmagic=True, transliterate=True, bidir=True,
+                  treetagger=True, spacytagger=True, stanzatagger=False, spacygpu=1):
 
     global tempfiles
     global tempdirs
@@ -89,7 +72,7 @@ def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
         tf.write(''.join(tune).rstrip('\n'))
 
     # Create inverted set > copy "lines" and reverse their order
-    if bider:
+    if bidir:
         rlines = lines.copy()
         rlines.reverse()
 
@@ -101,7 +84,7 @@ def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
             tr.write('\n'.join(lines))
             tempfiles.append(out_path + '/TreeTagger_train')
         # same for right context
-        if bider:
+        if bidir:
             with open(out_path + '/TreeTaggerR_train', 'w', encoding='utf-8') as tr:
                 tr.write('\n'.join(rlines))
                 tempfiles.append(out_path + '/TreeTaggerR_train')
@@ -118,9 +101,9 @@ def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
 
     # for treetagger we can save it as openclass if dont have a full one already
     if treetagger:
-        with open(out_path + '/TreeTagger_openclass', 'w', encoding='utf8') as f:
+        with open(out_path + 'TreeTagger_openclass', 'w', encoding='utf8') as f:
             f.write('\n'.join(uniquepos))
-        oc_path = out_path + '/TreeTagger_openclass'
+        oc_path = out_path + 'TreeTagger_openclass'
         tempfiles.append(oc_path)
 
     # SpacyTagger files preparation - Stanza file preparation
@@ -152,7 +135,7 @@ def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
         #     tempfiles.append(out_path + stanza_traindir)
         #     tempfiles.append(out_path + stanza_devdir)
 
-        if bider:
+        if bidir:
             rconlulines = rlines.copy()
             # create conllu format
             rconlulines = makeconllu(rconlulines, tagmap)
@@ -172,11 +155,11 @@ def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
     # TreeTagger training
     if treetagger:
         print("training TreeTagger")
-        tt_in_path = out_path + '/TreeTagger_train'
-        tt_out_path = newdir + '/TreeTagger' + name + '_right.par'
+        tt_in_path = out_path + 'TreeTagger_train'
+        tt_out_path = newdir + '/TreeTagger' + name + '.par'
         train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path)
 
-        if bider:
+        if bidir:
             tt_in_path = out_path + '/TreeTaggerR_train'
             tt_out_path = newdir + '/TreeTagger' + name + '_right.par'
             train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path)
@@ -194,7 +177,7 @@ def train_taggers(lines, out_path, lex_path, name, newdir, lexiconmagic=True):
 
         train_spacy(cfgpath, trainpath, devpath, spacy_outpath, spacy_destdir)
 
-        if bider:
+        if bidir:
             spacy_destdir = newdir + '/Spacy' + name + '_right'
             spacy_outpath = Path(out_path + "/spacyRTemp")
             trainpath = out_path + spacyR_traindir
@@ -223,7 +206,7 @@ def train_super(path, trainfile, name="default", matrix="", taggers_array=None,)
     global tempfiles
     global tempdirs
 
-    if matrix is "":
+    if matrix == "":
         if taggers_array is None:
             taggers_arr = os.listdir(path)
             taggers_array = ([])
