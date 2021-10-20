@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from distutils.dir_util import remove_tree
 
-from scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split
+from scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks
 # from scripts.pipeline import prepare_stanza
 from scripts.conversion import convert as conv
 from scripts.lexmagic import lexmagic
@@ -40,10 +40,11 @@ parameters = ['-cl ' + str(cl),
               '-ecw ' + str(ecw),
               '-atg ' + str(atg),
               '-sw ' + str(sw),
-              '-lt 0.001']#              '-quiet']
+              '-lt 0.001',
+              '-quiet']
 
 
-def train_taggers(lines, out_path, lex_path, name, newdir, ratio=0.9, lexiconmagic=True, transliterate=True, bidir=True,
+def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, ratio=0.9, lexiconmagic=True, transliterate=True, bidir=True,
                   treetagger=True, spacytagger=True, stanzatagger=False, spacygpu=1):
 
     global tempfiles
@@ -100,7 +101,7 @@ def train_taggers(lines, out_path, lex_path, name, newdir, ratio=0.9, lexiconmag
     uniquepos = list(set(poses))
 
     # for treetagger we can save it as openclass if dont have a full one already
-    if treetagger:
+    if treetagger and oc_path == "":
         with open(out_path + 'TreeTagger_openclass', 'w', encoding='utf8') as f:
             f.write('\n'.join(uniquepos))
         oc_path = out_path + 'TreeTagger_openclass'
@@ -170,7 +171,7 @@ def train_taggers(lines, out_path, lex_path, name, newdir, ratio=0.9, lexiconmag
 
         spacy_destdir = newdir + '/Spacy' + name
         spacy_outpath = Path(out_path + "/spacyTemp")
-        cfgpath = Path("../SpacyTagger/config.cfg")
+        cfgpath = Path("./SpacyTagger/config.cfg")
         trainpath = out_path + spacy_traindir
         devpath = out_path + spacy_devdir
         tempdirs.append(spacy_outpath)
@@ -198,7 +199,6 @@ def train_taggers(lines, out_path, lex_path, name, newdir, ratio=0.9, lexiconmag
         # tempdirs.append(out_path + '/StanzaTemp')
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
-    return out_path + "/tune" + name
 
 
 def train_super(path, trainfile, name="default", matrix="", taggers_array=None,):
@@ -226,25 +226,7 @@ def train_super(path, trainfile, name="default", matrix="", taggers_array=None,)
 
         tag_freq = {i: tags.count(i) / len(tags) for i in set(tags)}
 
-        targets = ([])
-        if len(tagslines) < 75000:
-            with open(path + '/prepared_ninety', 'w', encoding='utf8') as f:
-                f.write('\n'.join(words))
-            tempfiles.append(path + '/prepared_ninety')
-            targets.append(path + '/prepared_ninety')
-
-        else:
-            alltext = '\n'.join(words)
-            sents = alltext.split('\n\n\n')
-            chunkn = round(len(words) / 50000)
-            chunkovi = np.array_split(sents, chunkn)
-            print(chunkn)
-
-            for i, c in enumerate(chunkovi):
-                with open(path + '/prepared' + str(i), 'w', encoding='utf-8') as temp:
-                    temp.write('\n\n'.join(c))
-                tempfiles.append(path + '/prepared' + str(i))
-                targets.append(path + '/prepared' + str(i))
+        targets = write_chunks(words, path)
 
         for tagger in taggers_array:
             tlines = ([])

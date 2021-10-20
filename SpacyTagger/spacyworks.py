@@ -135,7 +135,7 @@ def gettagmap(uniqpos):
     return tagdic
 
 
-def train_spacy(cfgpath, trainpath, devpath, temp, destdir, spacygpu):
+def train_spacy(cfgpath, trainpath, devpath, temp, destdir, spacygpu=0):
     if not os.path.isdir(destdir):
         os.mkdir(destdir)
     if not os.path.isdir(temp):
@@ -147,4 +147,4 @@ def train_spacy(cfgpath, trainpath, devpath, temp, destdir, spacygpu):
     nlp = init_nlp(config, use_gpu=spacygpu)
     trainpos(nlp, temp, use_gpu=spacygpu, stdout=sys.stdout, stderr=sys.stderr)
 
-    copy_tree(temp + '/model-best', destdir)
+    copy_tree(str(temp) + '/model-best', destdir)

@@ -4,12 +4,32 @@ from scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1, lex_paths={},
-         lexicons_path="./data/lexicon/", tune_ratio=0.9, beast_dir="./data/output/newBEaST", tunepaths={}):
+def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1, tune_ratio=0.9,
+         lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST", lex_paths={}, oc_paths={},
+         tunepaths={}):
+
+    """
+    :param file_path: string > path to file that will be used for training. File must be in tsv form with a header,
+     with the first column being the word and the last lemma. Names for tagset in between will be fetched from header
+      - default of NONE results in tkinter input
+    :param out_path: string > path to dir where model dir will be created - defaults to ./data/output
+    :param pretrained: bool > do not train standalone taggers - defaults in False
+    Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
+    :param test_ratio: float > ratio of training testing cutoff - defaults in 1, no cutoff
+    :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.9, meaning 0.1 for tuning
+    :param lexicons_path: string > path to dir where lexicons are located - defaults to ./data/lexicon/
+    :param beast_dir: string > path to dir where model is or be outputted - defaults to ./data/output/newBEaST
+    :param lex_paths: dict{} > mapping between models (tagsets) and lexicons to be used for treetagger training -
+    defaults of {} result in using the lexicons from the lexicons_path dir
+    :param oc_paths: dict{} > mapping between models (tagsets) and openclass files to be used for treetagger training -
+    defaults of {} result in using the openclass files from the lexicons_path dir
+    :param tunepaths: dict{} > mapping between models (tagsets) and tuning files. necessary if pretrained - no default
+    :return: this function outputs trained model onto said location - no returns
+    """
 
     # initiate lexicons
-    lexicons = os.listdir(lexicons_path)
-    lex_path = lexicons_path + "default"
+    lexicons = [x for x in os.listdir(lexicons_path) if "openclass" not in x]
+    openclass = [x for x in os.listdir(lexicons_path) if "openclass" in x]
 
     if not pretrained:
         if file_path == "":
@@ -37,7 +57,16 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1
                     if "_" + tagset.lower() in lexicon.lower():
                         lex_paths[tagset] = lexicons_path + lexicon
                 if tagset not in lex_paths:
-                    lex_paths[tagset] = lex_path
+                    lex_paths[tagset] = lexicons_path + "default"
+
+        # prepare openclass paths for treetagger if not supplied
+        if oc_paths == {}:
+            for tagset in tagsets.keys():
+                for oc in openclass:
+                    if "_" + tagset.lower() in oc.lower():
+                        oc_paths[tagset] = lexicons_path + oc
+                if tagset not in oc_paths:
+                    oc_paths[tagset] = lexicons_path + "openclass"
 
         # train for each tagset
         for tagset in tagsets.keys():
@@ -59,20 +88,21 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=1
                             xlines.append(parts[0] + "\t" + parts[c] + lem)
 
             # train
-            tunepaths[tagset] = train_taggers(xlines, out_path, lex_paths[tagset], "_" + tagset, beast_dir, tune_ratio)
+            train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset, beast_dir, tune_ratio)
 
         for tagset in tagsets.keys():
-            train_super(beast_dir, tunepaths[tagset], tagset)
+            train_super(beast_dir, out_path + "/tune_" + tagset, tagset)
 
     else:
         for tune in tunepaths:
             tunename = os.path.basename(tune)
-            file_path = fd.askopenfilename(initialdir="./data/training",
-                                           title="Select tagged text files for " + tunename,
-                                           filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
-                                                      ("all files", "*.*")))
+            if tunepaths[tune] == "":
+                tunepaths[tune] = fd.askopenfilename(initialdir="./data/training",
+                                               title="Select tagged text files for " + tunename,
+                                               filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
+                                                          ("all files", "*.*")))
 
-            train_super(beast_dir, file_path, tunename)
+            train_super(beast_dir, tunepaths[tune], tunename)
 
 
 if __name__ == "__main__":

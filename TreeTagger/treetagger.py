@@ -42,13 +42,18 @@ def train_treetagger(params, lex_path, oc_path, in_path, out_path):
         ext = ".exe"
 
     args.append("./TreeTagger/bin/train-tree-tagger" + ext)
+
     args.append(lex_path)
     args.append(oc_path)
     args.append(in_path)
     args.append(out_path)
 
     for param in params:
-        args.append(param)
+        if " " in param:
+            args.append(param.split(' ')[0])
+            args.append(param.split(' ')[1])
+        else:
+            args.append(param)
 
     with open(os.devnull, 'wb') as devnull:
-        check_call(args, stdout=devnull, stderr=STDOUT)
+        check_call(args, stdout=DEVNULL, stderr=STDOUT)
