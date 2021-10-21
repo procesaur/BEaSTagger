@@ -13,7 +13,7 @@ from scripts.pipeline import probtagToMatrix, get_taggers, lemmas_dic, lexentrie
 
 def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmagic=False, transliterate=True,
                 tokenization=True, MWU=False, onlyPOS=False, lemmat=False, testing=False,
-                models=[], lemmatizers={}, lempos=False):
+                models=[], lemmatizers={}, lempos=False, probability=False, stdout=False):
 
     # default parameters
     tempfiles = ([])
@@ -57,7 +57,7 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
             newprobs[model] = ([])
             newtags[model] = ([])
 
-        paragraphs, total = segmentize(file)
+        paragraphs, total, size = segmentize(file)
 
         # tokenization
         if tokenization:
@@ -175,6 +175,8 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
                         taggedline += "\t" + lemmas[model][i]
                         if lempos:
                             taggedline += "\t" + lemmas[model][i] + "_" + newtags[model][i]
+                    if probability:
+                        taggedline += "\t" + str(round(newprobs[model][i], 3))
                 taggedline += "\n"
                 taggedlines.append(taggedline)
 
@@ -202,9 +204,17 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
             finalines = taggedlines
 
         if not testing:
-            with open(out_path + '/' + os.path.basename(filesmap[file]) + "_" + par_name + ".tt", 'a+', encoding='utf-8') as m:
-                for line in finalines :
-                    m.write(line)
+            if stdout:
+                for line in finalines:
+                    print(line)
+            else:
+                if os.path.isfile(filesmap[file]):
+                    writepath = out_path + '/' + os.path.basename(filesmap[file]) + "_" + par_name + ".tt"
+                else:
+                    writepath = out_path + "/input_" + par_name + ".tt"
+                with open(writepath, 'a+', encoding='utf-8') as m:
+                    for line in finalines:
+                        m.write(line)
 
         del taggedlines
 
@@ -215,7 +225,7 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
             if os.path.isfile(tempf):
                 os.remove(tempf)
 
-    return newtags, tagger_tags, newprobs, csv
+    return newtags, tagger_tags, newprobs, matricout.transpose(), flat_tagset
 
 
 def tag_any(file, par_path, out_path):

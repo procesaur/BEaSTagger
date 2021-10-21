@@ -5,6 +5,7 @@ import re
 import sys
 import numpy as np
 from pathlib import Path
+import requests
 
 from spacy.cli.convert import _write_docs_to_file
 from spacy.tokens._serialize import DocBin
@@ -104,13 +105,26 @@ def filechunkses(paragraphs, n, total):
 
 
 def segmentize(file="", erase_newlines=True):
-    try:
-        with open(file, 'r', encoding='utf-8') as f:
-            fulltext = f.read()
+    if 'https' in file or 'http' in file:
+        response = requests.get(file)
+        fulltext = response.text.replace('\r', '').splitlines
 
-    except:
-        with open(file, 'r', encoding='latin2') as f:
-            fulltext = f.read()
+        response = requests.head(sys.argv[1], allow_redirects=True)
+        size = response.headers.get('content-length', -1)
+
+    elif os.path.isfile(file):
+        size = os.path.getsize(file)
+        try:
+            with open(file, 'r', encoding='utf-8') as f:
+                fulltext = f.read()
+
+        except:
+            with open(file, 'r', encoding='latin2') as f:
+                fulltext = f.read()
+    else:
+        fulltext = file
+        size = 1
+
 
     if erase_newlines:
         control = 12
@@ -126,7 +140,7 @@ def segmentize(file="", erase_newlines=True):
     fulltext = fulltext.replace('\n \n', '\n').replace(' \n ', '\n')
     fulltext = re.sub(r'\n+', '\n', fulltext)
 
-    return fulltext.split('\n'), len(fulltext)
+    return fulltext.split('\n'), len(fulltext), size
 
 
 def tokenize(paragraphs, out_path=""):
@@ -136,8 +150,12 @@ def tokenize(paragraphs, out_path=""):
 
 
 def lexentries(lex_path):
-    with open(lex_path, 'r', encoding='utf-8') as lex:
-        entriesfull = [wordx.split('\t')[0] for wordx in lex.readlines()]
+    if 'https://' in lex_path or 'http://' in lex_path:
+        response = requests.get(lex_path)
+        entriesfull = [wordx.split('\t')[0] for wordx in response.text.splitlines(keepends=True)]
+    else:
+        with open(lex_path, 'r', encoding='utf-8') as lex:
+            entriesfull = [wordx.split('\t')[0] for wordx in lex.readlines()]
 
     entries_c = [wordx for wordx in entriesfull if wordx[0].isupper()]
     entries_l = [wordx for wordx in entriesfull if not wordx[0].isupper()]
@@ -172,8 +190,8 @@ def big_chunkus(filex, out_path, terminal_size=50000000):
     files = ([])
     filesmap = {}
 
-    paragraphs, total = segmentize(filex)
-    fn = math.ceil(os.path.getsize(filex) / terminal_size)
+    paragraphs, total, size = segmentize(filex)
+    fn = math.ceil(size / terminal_size)
     if len(paragraphs) < fn + 1:
         fn = len(paragraphs)
     if fn > 1:
@@ -182,14 +200,15 @@ def big_chunkus(filex, out_path, terminal_size=50000000):
         print("writing " + str(fn) + " chunks to disk")
 
         for i, c in enumerate(filechunks):
+            newname = out_path + "/" + os.path.basename(filex)
             if i != fn:
-                fname = out_path + "/" + os.path.basename(filex) + '___' + str(i)
+                fname = newname + '___' + str(i)
                 with open(fname, 'w', encoding='utf-8') as temp:
                     temp.write('\n'.join(c))
                 files.append(fname)
                 filesmap[fname] = filex
             else:
-                fname = out_path + "/" + os.path.basename(filex) + '___' + str(i - 1)
+                fname = newname + '___' + str(i - 1)
                 with open(fname, 'a', encoding='utf-8') as temp:
                     temp.write('\n'.join(c))
 
@@ -404,8 +423,12 @@ def ratio_split(ratio, lines):
 
 def training_prep(file):
     tagsets = {}
-    with open(file, 'r', encoding='utf-8') as fl:
-        lines = fl.readlines()  # all lines including the blank ones
+    if 'https://' in file or 'http://' in file:
+        response = requests.get(file)
+        lines = response.text.replace('\r', '').splitlines()
+    else:
+        with open(file, 'r', encoding='utf-8') as fl:
+            lines = fl.readlines()  # all lines including the blank ones
 
     meta = lines[0].rstrip().split("\t")
     colsn = len(meta)

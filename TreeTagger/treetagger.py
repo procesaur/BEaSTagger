@@ -1,4 +1,5 @@
 import os
+import requests
 from subprocess import DEVNULL, STDOUT, check_call
 
 
@@ -40,6 +41,14 @@ def train_treetagger(params, lex_path, oc_path, in_path, out_path):
     ext = ""
     if isWindows():
         ext = ".exe"
+
+    if 'https://' in lex_path or 'http://' in lex_path:
+        response = requests.get(lex_path)
+        lex_path = response.text
+
+    if 'https://' in oc_path or 'http://' in oc_path:
+        response = requests.get(oc_path)
+        oc_path = response.text
 
     args.append("./TreeTagger/bin/train-tree-tagger" + ext)
 

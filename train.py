@@ -7,13 +7,13 @@ from tkinter import Tk, filedialog as fd
 
 def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
          lexiconmagic=True, transliterate=False, lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST",
-         lex_paths={},oc_paths={}, tunepaths={}, testing=True, onlytesting="",
+         lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
          epochs=10, batch_size=32, learning_rate=0.001):
 
     """
-    :param file_path: string > path to file that will be used for training. File must be in tsv form with a header,
-     with the first column being the word and the last lemma. Names for tagset in between will be fetched from header
-      - default of NONE results in tkinter input
+    :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
+    header, with the first column being the word and the last lemma.
+    Names for tagset in between will be fetched from header - default of NONE results in tkinter input
     :param out_path: string > path to dir where model dir will be created - defaults to ./data/output
     :param pretrained: bool > do not train standalone taggers - defaults in False
     Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
@@ -31,6 +31,7 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0
     :param testing: bool > do the testing? - requires test_ratio of less than 1 and defaults in False
     :param onlytesting: string > skip all training and use this path to find test set - defaults in "",
      requires beast_dir
+    :param fulltest: bool > output complete report for each tagger - defaults in False - compact metrics
     :param epochs: int > number of epochs for training stacked classifier
     :param batch_size: int > batch size for training stacked classifier
     :param learning_rate: float > learning_rate for training stacked classifier
@@ -126,12 +127,12 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0
 
         if testing:
             print("testing")
-            complex_test(beast_dir, out_path + "/testing", lexiconmagic, transliterate, out_path)
+            complex_test(beast_dir, out_path + "/testing", lexiconmagic, transliterate, fulltest, out_path)
 
     else:
         print("testing")
-        complex_test(beast_dir, onlytesting, lexiconmagic, transliterate, out_path)
+        complex_test(beast_dir, onlytesting, lexiconmagic, transliterate, fulltest, out_path)
 
 
 if __name__ == "__main__":
-    main()
+    main(testing=True)
