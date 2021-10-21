@@ -51,7 +51,6 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
         # initialize file
         newtags = {}
         newprobs = {}
-        exclusion = {}
 
         for model in models:
             newprobs[model] = ([])

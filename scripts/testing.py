@@ -48,11 +48,7 @@ def complex_test(tagger="", file="", lexiconmagic=True, transliterate=True, full
     for tagset in tagsets:
         modelname = tagset + ".pt"
 
-        with open(out_path + '/temp_test', 'w', encoding='utf-8') as temp:
-            temp.write('\n'.join(words))
-            tempfiles.append(out_path + '/temp_test')
-
-        newtags, tagger_tags, probs, matrix, flat_tagset = tag_complex(tagger, "", [out_path + '/temp_test'], out_path, False, False,
+        newtags, tagger_tags, probs, matrix, flat_tagset = tag_complex(tagger, "", ['\n'.join(words)], out_path, False, False,
                                                False, False, False, False, True, [modelname], {}, False)
 
         test_results(newtags[modelname], tags[tagset], tagger_tags, tagset, matrix, flat_tagset, full)
