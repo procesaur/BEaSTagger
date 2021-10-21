@@ -1,4 +1,4 @@
-from scripts.TagAll import tag_complex
+from scripts.tagging import tag_complex
 import os
 from tkinter import Tk, filedialog as fd
 
@@ -52,4 +52,4 @@ def main(files=None, model="./data/default", out_path="./data/output", lexicons_
 
 
 if __name__ == "__main__":
-    main(model='./data/output/NewBEaST', lempos=True, lemmatizers={'POS.pt': './data/lexicon/default'})
+    main()

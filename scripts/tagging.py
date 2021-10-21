@@ -1,15 +1,14 @@
 import os
-import ntpath
 import numpy as np
 import re
 
 from scripts.conversion import convert as conv
-from scripts.lexmagic import lexmagic
 from TreeTagger.treetagger import tag_treetagger
 from SpacyTagger.spacyworks import tag_spacytagger
 # from Classla.TagClassla import tag_classla
-from scripts.matrixworks import probtagToMatrix, test_prob_net
-from scripts.pipeline import tokenize, chunkses, segmentize, lexentries, lemmas_dic, big_chunkus, rem_xml, write_chunks, get_taggers
+from scripts.torchworks import test_prob_net
+from scripts.pipeline import tokenize, segmentize, big_chunkus, rem_xml, write_chunks, lexmagic
+from scripts.pipeline import probtagToMatrix, get_taggers, lemmas_dic, lexentries
 
 
 def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmagic=False, transliterate=True,

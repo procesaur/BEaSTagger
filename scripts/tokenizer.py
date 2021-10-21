@@ -1,7 +1,6 @@
 import re
 import sys
 import os
-from tqdm import tqdm
 
 
 if sys.platform == 'win32':
@@ -210,7 +209,7 @@ def rel_tokenize(text, out_path, lang='sr', document=False, nonstandard=False, c
     newtext = ''
     parn = len(text)
     print(str(parn) + " paragraphs")
-    for line in tqdm(nextpar(text), total=parn):
+    for line in text:
         if line.strip() == '':
             continue
         elif re.match(r"^.*<!--.*$|^.*-->.*$|^.*<.*>.*$", line):

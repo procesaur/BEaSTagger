@@ -1,13 +1,16 @@
-import os
-import re
 import math
+import os
 import random
+import re
+import sys
+import numpy as np
 from pathlib import Path
-from scripts.tokenizer import rel_tokenize
 
+from spacy.cli.convert import _write_docs_to_file
 from spacy.tokens._serialize import DocBin
 from spacy.training.converters.conllu_to_docs import conllu_to_docs
-from spacy.cli.convert import _write_docs_to_file
+
+from scripts.tokenizer import rel_tokenize
 
 
 def prepare_spacy(conlulines, tempdirs, traindir, devdir):
@@ -275,6 +278,89 @@ def get_taggers(path):
     return taggers_array
 
 
+def probtagToMatrix(linest, taggershort, tags=None):
+    thetags = ([])
+    matrices = ([])
+    fulltagset = ([])
+    tagtrue = {}
+    tagflase = {}
+    tagaccu = {}
+
+    truefpos = 0
+    truepos = 0
+    falsefpos = 0
+    falsepos = 0
+
+    ln = len(linest)
+    tagger_tags = ([])
+
+    for idx, line in enumerate(linest):
+        line = line.rstrip('\n')
+        resultsline = line.split('\t')
+        top = resultsline[1]
+        topn = float(top.split(' ')[1])
+        toptag = top.split(' ')[0]
+        word = resultsline[0]
+        del resultsline[0]
+        for nr in resultsline:
+            thetags.append(taggershort + '__' + nr.split(' ')[0])
+
+            try:
+                istopn = float(nr.split(' ')[1])
+            except:
+                sys.stdout.write(line)
+            if istopn > topn:
+                topn = istopn
+                toptag = nr.split(' ')[0]
+                top = nr
+
+        tagger_tags.append(toptag)
+
+        if tags is not None:
+            res = top.split(' ')[0]
+            ans = tags[idx]
+
+            if res not in tagtrue.keys():
+                tagtrue[res] = 0
+                tagflase[res] = 0
+
+            if ans == res:
+                truefpos += 1
+                tagtrue[res] += 1
+            else:
+                falsefpos += 1
+                tagflase[res] += 1
+
+            if ans.split(':')[0] == res.split(':')[0]:
+                truepos += 1
+            else:
+                falsepos += 1
+
+            for key in tagtrue:
+                tn = tagtrue[key]
+                fn = tagflase[key]
+                tagaccu[taggershort + '_' + key] = tn * 100 / (tn + fn)
+
+    tagset = list(set(thetags))
+
+    tagdic = {}
+    for i, dt in enumerate(tagset):
+        tagdic[dt] = i
+        fulltagset.append(dt)
+
+    matrix = np.zeros([len(tagset), ln], dtype=float)
+    for idx, line in enumerate(linest):
+        line = line.rstrip('\n')
+        line = line.rstrip('\t')
+        resultsline = line.split('\t')
+        del resultsline[0]
+        for r in resultsline:
+            rt, rv = r.split(' ')
+            matrix[tagdic[taggershort + '__' + rt]][idx] = rv
+
+    return matrix, tagaccu, tagset, tagger_tags
+
+
 def ratio_split(ratio, lines):
     count_sen = 0
     # remove new lines form the end of each line, because they are an array now
@@ -343,3 +429,71 @@ def training_prep(file):
             lines[i] = '\n'
 
     return lines, lemacol, tagsets, newline, colsn
+
+
+def lexmagic(entries_u, entries_c, entries_l, lines, synonyms=None):
+    origlines = lines.copy()
+    rc = 0
+    # print('doing lexicon magic...  (might take a while, based on file sizes)')
+    listexcept = ["„", "“", "”", "*"]
+    linesx = ([])
+
+    def l(ls):
+        for x in ls:
+            yield x
+
+    # for each line take word pos and lemma
+    for line in l(lines):
+        lsplit = line.split('\t')
+        if len(lsplit) > 2:
+            opos = "\t" + lsplit[1]
+            olema = "\t" + lsplit[2]
+        elif len(lsplit) == 2:
+            opos = "\t" + lsplit[1]
+            olema = ""
+        else:
+            opos = ""
+            olema = ""
+        word = lsplit[0].rstrip('\n')
+
+        if word != '':
+
+            # if the first letter in a word is capitalized
+            if word[0].isupper():
+                wordlow = word.lower()  # generate lowercaps word
+                wordcap = wordlow.capitalize()  # generate word with a capital
+
+                if word.isupper():
+                    if word in entries_u:
+                        pass
+                    elif wordcap in entries_c:
+                        word = wordcap
+                        rc += 1
+
+                    elif wordlow in entries_l:
+                        word = wordlow
+                        rc += 1
+
+                else:
+                    if wordcap in entries_c:
+                        word = wordcap
+                        rc += 1
+
+                    elif wordlow in entries_l:
+                        word = wordlow
+                        rc += 1
+
+
+            if word in listexcept:
+                word = "\""
+                rc += 1
+
+            if synonyms is not None:
+                if word in synonyms.keys():
+                    word = synonyms[word]
+                    rc += 1
+
+        linesx.append(word + opos + olema)
+
+    print('lexicon magic word replacements: ' + str(rc))
+    return linesx, origlines

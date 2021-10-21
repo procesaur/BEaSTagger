@@ -1,6 +1,6 @@
 import os
-from scripts.TrainAll import train_taggers, train_super
-from scripts.TestAll import complex_test
+from scripts.training import train_taggers, train_super
+from scripts.testing import complex_test
 from scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
