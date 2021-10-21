@@ -13,7 +13,7 @@ from scripts.pipeline import tokenize, chunkses, segmentize, lexentries, lemmas_
 
 
 def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmagic=False, transliterate=True,
-                tokenization=True, MWU=False, onlyPOS=False, results=None, lemmat=False, testing=False,
+                tokenization=True, MWU=False, onlyPOS=False, lemmat=False, testing=False,
                 models=[], lemmatizers={}, lempos=False):
 
     # default parameters
@@ -119,7 +119,8 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
             flat_tagset = [item for sublist in tagsets for item in sublist]
 
             matricout = np.concatenate(matrices, axis=0)
-            with open(out_path + "/matrix-prob_tag.csv", 'w', encoding='utf-8') as m:
+            csv = out_path + "/matrix-prob_tag.csv"
+            with open(csv, 'w', encoding='utf-8') as m:
                 m.write('\t'.join(flat_tagset) + '\n')
                 for idx, line in enumerate(matricout.transpose()):
                     # m.write(words[idx] + '\t') we can write the words but dont need to
@@ -127,16 +128,17 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
                     np.savetxt(m, line[np.newaxis], delimiter='\t', fmt='%.4f')
 
             for model in models:
-                newtagsx, newprobsx = test_prob_net(out_path + "/matrix-prob_tag.csv", par_path, out_path, model)
+                newtagsx, newprobsx = test_prob_net(csv, par_path, out_path, model)
                 newtags[model].extend(newtagsx)
                 newprobs[model].extend(newprobsx)
 
         if not testing:
-            tempfiles.append(out_path + "/matrix-prob_tag.csv")
+            tempfiles.append(csv)
 
         # if there is lemmatization and if it is possible (par file found)
+        taggedlines = ([])
         if lemmat:
-            taggedlines = ([])
+
             print('lemmatizing')
 
             noslines = list(line.rstrip('\n') for line in lines if line not in ['\n', ''])
@@ -200,11 +202,13 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
         else:
             finalines = taggedlines
 
-        with open(out_path + '/' + os.path.basename(filesmap[file]) + "_" + par_name + ".tt", 'a+', encoding='utf-8') as m:
-            for line in finalines :
-                m.write(line)
+        if not testing:
+            with open(out_path + '/' + os.path.basename(filesmap[file]) + "_" + par_name + ".tt", 'a+', encoding='utf-8') as m:
+                for line in finalines :
+                    m.write(line)
 
         del taggedlines
+
         if filesmap[file] != file:
             os.remove(file)
         # remove temp files
@@ -212,7 +216,7 @@ def tag_complex(par_path="", lex_path="", file_paths="", out_path="", lexiconmag
             if os.path.isfile(tempf):
                 os.remove(tempf)
 
-    return newtags, tagger_tags, newprobs
+    return newtags, tagger_tags, newprobs, csv
 
 
 def tag_any(file, par_path, out_path):

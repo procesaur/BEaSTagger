@@ -24,7 +24,7 @@ def main(files=None, model="./data/default", out_path="./data/output", lexicons_
     """
 
     # initiate lexicons
-    lexicons = os.listdir(lexicons_path)
+    lexicons = [x for x in os.listdir(lexicons_path) if "openclass" not in x]
     lex_path = lexicons_path + "default"
 
     if not files:
@@ -47,9 +47,9 @@ def main(files=None, model="./data/default", out_path="./data/output", lexicons_
                 lemmatizers[modelx] = lex_path
 
     for f in files:
-        tag_complex(model, lex_path, [f], out_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS, None,
+        tag_complex(model, lex_path, [f], out_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS,
                     lemmat, False, modelnames, lemmatizers, lempos)
 
 
 if __name__ == "__main__":
-    main()
+    main(model='./data/output/NewBEaST', lempos=True, lemmatizers={'POS.pt': './data/lexicon/default'})

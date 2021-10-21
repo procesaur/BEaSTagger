@@ -169,7 +169,7 @@ def test_prob_net(csv, par_path, out_path, modelname='net-prob.pt'):
     return tags, y_prob_list
 
 
-def train_prob_net(csv, out, name):
+def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size=0.1):
 
     out_path = out + "/" + name
     dataset = pd.read_csv(csv, sep='\t')
@@ -213,7 +213,7 @@ def train_prob_net(csv, out, name):
 
     X_trainval, X_test, y_trainval, y_test = train_test_split(input, output, test_size=0.01,
                                                               random_state=66)
-    X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=0.1, stratify=y_trainval,
+    X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=val_size, stratify=y_trainval,
                                                       random_state=20)
 
     X_train, y_train = np.array(X_train), np.array(y_train)
@@ -254,9 +254,9 @@ def train_prob_net(csv, out, name):
         replacement=True
     )
 
-    EPOCHS = 100
-    BATCH_SIZE = 32
-    LEARNING_RATE = 0.001
+    EPOCHS = epochs
+    BATCH_SIZE = batch_size
+    LEARNING_RATE = lr
     NUM_FEATURES = len(input.columns)
     NUM_CLASSES = len(tag_list)
 
@@ -274,11 +274,8 @@ def train_prob_net(csv, out, name):
     model.to(device)
 
     criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
-    # criterion = nn.
 
-    optimizer = torch.optim.ASGD(model.parameters(), lr=0.01, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
-    optimizer = torch.optim.Adagrad(model.parameters(), lr=0.005, lr_decay=0, weight_decay=0,
-                                    initial_accumulator_value=0, eps=1e-10)
+    # optimizer = torch.optim.ASGD(model.parameters(), lr=0.01, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     # print(model)
@@ -401,7 +398,7 @@ def train_prob_net(csv, out, name):
             y_pred_list.append(y_pred_tags.cpu().numpy())
 
     y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
-    print(classification_report(y_test, y_pred_list))
+    print(classification_report(y_test, y_pred_list, zero_division=1))
 
 
 def probtagToMatrix(linest, taggershort, tags=None):
@@ -485,6 +482,7 @@ def probtagToMatrix(linest, taggershort, tags=None):
             matrix[tagdic[taggershort + '__' + rt]][idx] = rv
 
     return matrix, tagaccu, tagset, tagger_tags
+
 
 def matrixworks(csv, tag_accu, tags, results, tagger_answers, probs, words=None):
     high_pos_t = 0

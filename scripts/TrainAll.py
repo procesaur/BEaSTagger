@@ -200,8 +200,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, ratio=0.9, l
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
 
-
-def train_super(path, trainfile, name="default", matrix="", taggers_array=None,):
+def train_super(path, trainfile, name="default", epochs=100, bs=32, lr=0.001, matrix="", taggers_array=None):
 
     global tempfiles
     global tempdirs
@@ -266,4 +265,4 @@ def train_super(path, trainfile, name="default", matrix="", taggers_array=None,)
 
         matrix = path + "/matrix-prob.csv"
 
-    train_prob_net(matrix, path, name + ".pt")
+    train_prob_net(matrix, path, name + ".pt", epochs, bs, lr)
