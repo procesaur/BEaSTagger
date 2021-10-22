@@ -6,10 +6,9 @@ from scripts.conversion import convert as conv
 import pandas as pd
 
 
-def complex_test(tagger="", file="", lexiconmagic=True, transliterate=True, full=False,
-                 out_path="./data/output", lex_path="./data/lexicon/default"):
+def complex_test(tagger="", file="", lexiconmagic=True, transliterate=True, full=False, confidence=0.93,
+                 out_path="",  lex_path="", tt_path=""):
 
-    tempfiles = ([])
     words = ([])
     tags = {}
 
@@ -43,15 +42,19 @@ def complex_test(tagger="", file="", lexiconmagic=True, transliterate=True, full
         # load all possible words from the lexicon (in uppercase, capitalized and lowercase)
         entries_u, entries_c, entries_l = lexentries(lex_path)
         # convert using lexicon magic
-        words, orliglineslm = lexmagic(set(entries_u), set(entries_c), set(entries_l), words)
+        words, orliglineslm, rc = lexmagic(set(entries_u), set(entries_c), set(entries_l), words)
+
+    with open(out_path + "/temp_test", 'w', encoding='utf-8') as temp:
+        temp.write('\n'.join(words))
 
     for tagset in tagsets:
         modelname = tagset + ".pt"
 
-        newtags, tagger_tags, probs, matrix, flat_tagset = tag_complex(tagger, "", ['\n'.join(words)], out_path, False, False,
-                                               False, False, False, False, True, [modelname], {}, False)
+        newtags, tagger_tags, probs, matrix, flat = tag_complex(tagger, "", [out_path + "/temp_test"], out_path,
+                                                                tt_path, False, False, False, False, False, False, True,
+                                                                False, [modelname], {}, False, False, False, confidence)
 
-        test_results(newtags[modelname], tags[tagset], tagger_tags, tagset, matrix, flat_tagset, full)
+        test_results(tags[tagset], newtags[modelname], tagger_tags, tagset, matrix, flat, full)
 
 
 def test_results(correct_tags, beast_tags, tagger_answers, tagset, matrix, flat_tagset, full=False):

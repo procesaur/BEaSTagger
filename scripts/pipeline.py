@@ -143,12 +143,6 @@ def segmentize(file="", erase_newlines=True):
     return fulltext.split('\n'), len(fulltext), size
 
 
-def tokenize(paragraphs, out_path=""):
-    lines = rel_tokenize(paragraphs, out_path, 'sr')
-    os.remove(out_path + '/tempw')
-    return lines
-
-
 def lexentries(lex_path):
     if 'https://' in lex_path or 'http://' in lex_path:
         response = requests.get(lex_path)
@@ -186,7 +180,7 @@ def lemmas_dic(lemmatizers):
     return lemdic
 
 
-def big_chunkus(filex, out_path, terminal_size=50000000):
+def big_chunkus(filex, out_path, quiet=True, terminal_size=50000000):
     files = ([])
     filesmap = {}
 
@@ -195,9 +189,11 @@ def big_chunkus(filex, out_path, terminal_size=50000000):
     if len(paragraphs) < fn + 1:
         fn = len(paragraphs)
     if fn > 1:
-        print("huge file - splitting")
+        if not quiet:
+            print("huge file - splitting")
         filechunks = filechunkses(paragraphs, fn, total)
-        print("writing " + str(fn) + " chunks to disk")
+        if not quiet:
+            print("writing " + str(fn) + " chunks to disk")
 
         for i, c in enumerate(filechunks):
             newname = out_path + "/" + os.path.basename(filex)
@@ -506,7 +502,6 @@ def lexmagic(entries_u, entries_c, entries_l, lines, synonyms=None):
                         word = wordlow
                         rc += 1
 
-
             if word in listexcept:
                 word = "\""
                 rc += 1
@@ -518,5 +513,4 @@ def lexmagic(entries_u, entries_c, entries_l, lines, synonyms=None):
 
         linesx.append(word + opos + olema)
 
-    print('lexicon magic word replacements: ' + str(rc))
-    return linesx, origlines
+    return linesx, origlines, rc

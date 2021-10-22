@@ -41,8 +41,8 @@ parameters = ['-cl ' + str(cl),
               '-quiet']
 
 
-def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, ratio=0.9, lexiconmagic=True, transliterate=True, bidir=True,
-                  treetagger=True, spacytagger=True, stanzatagger=False, spacygpu=1):
+def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, ratio=0.9, lexiconmagic=True,
+                  transliterate=True, bidir=True, treetagger=True, spacytagger=True, stanzatagger=False, spacygpu=1):
 
     global tempfiles
     global tempdirs
@@ -58,7 +58,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, ratio=0.9, l
         # load all possible words from the lexicon (in uppercase, capitalized and lowercase)
         entries_u, entries_c, entries_l = lexentries(lex_path)
         # convert using lexicon magic
-        lines, orliglineslm = lexmagic(set(entries_u), set(entries_c), set(entries_l), lines)
+        lines, orliglineslm, rc = lexmagic(set(entries_u), set(entries_c), set(entries_l), lines)
         # save lexicon magic
 
     train, tune = ratio_split(ratio, lines)
@@ -155,12 +155,12 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, ratio=0.9, l
         print("training TreeTagger")
         tt_in_path = out_path + 'TreeTagger_train'
         tt_out_path = newdir + '/TreeTagger' + name + '.par'
-        train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path)
+        train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path, tt_path)
 
         if bidir:
             tt_in_path = out_path + '/TreeTaggerR_train'
             tt_out_path = newdir + '/TreeTagger' + name + '_right.par'
-            train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path)
+            train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path, tt_path)
 
     # Spacy Tagger training
     if spacytagger:
@@ -197,7 +197,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, ratio=0.9, l
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
 
-def train_super(path, trainfile, name="default", epochs=100, bs=32, lr=0.001, matrix="", taggers_array=None):
+def train_super(path, trainfile, tt_path, name="default",  epochs=100, bs=32, lr=0.001, matrix="", taggers_array=None):
 
     global tempfiles
     global tempdirs
@@ -227,7 +227,7 @@ def train_super(path, trainfile, name="default", epochs=100, bs=32, lr=0.001, ma
         for tagger in taggers_array:
             tlines = ([])
             for target in targets:
-                tlines += tag_any(target, tagger, path)
+                tlines += tag_any(target, tagger, path, tt_path)
 
             mat, accu, tagset, taggert = probtagToMatrix(tlines, tagger.split('/')[-1], tags)
             matrices.append(mat)

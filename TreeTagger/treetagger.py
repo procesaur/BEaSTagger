@@ -7,14 +7,14 @@ def isWindows():
     return os.name == 'nt'
 
 
-def tag_treetagger(par_path, file_path, out_path, probability, lemmat):
+def tag_treetagger(par_path, file_path, out_path, probability, lemmat, tt_path="./TreeTagger/bin"):
     # set system parameters for tagging
     args = ([])
     ext = ""
     if isWindows():
         ext = ".exe"
 
-    args.append("./TreeTagger/bin/tree-tagger" + ext)
+    args.append(tt_path + "tree-tagger" + ext)
     args.append(par_path)
     args.append(file_path)
 
@@ -36,7 +36,7 @@ def tag_treetagger(par_path, file_path, out_path, probability, lemmat):
         check_call(args, stdout=devnull, stderr=STDOUT)
 
 
-def train_treetagger(params, lex_path, oc_path, in_path, out_path):
+def train_treetagger(params, lex_path, oc_path, in_path, out_path, tt_path="./TreeTagger/bin/"):
     args = ([])
     ext = ""
     if isWindows():
@@ -50,7 +50,7 @@ def train_treetagger(params, lex_path, oc_path, in_path, out_path):
         response = requests.get(oc_path)
         oc_path = response.text
 
-    args.append("./TreeTagger/bin/train-tree-tagger" + ext)
+    args.append(tt_path + "train-tree-tagger" + ext)
 
     args.append(lex_path)
     args.append(oc_path)

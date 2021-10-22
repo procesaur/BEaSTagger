@@ -208,7 +208,7 @@ def rel_tokenize(text, out_path, lang='sr', document=False, nonstandard=False, c
 
     newtext = ''
     parn = len(text)
-    print(str(parn) + " paragraphs")
+    # print(str(parn) + " paragraphs")
     for line in text:
         if line.strip() == '':
             continue
@@ -227,7 +227,5 @@ def rel_tokenize(text, out_path, lang='sr', document=False, nonstandard=False, c
         if bert:
             newtext += '\n'
 
-    with open(out_path + "/tempw", 'w', encoding='utf-8') as w:
-        w.write(newtext)
 
     return newtext.split('\n')

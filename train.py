@@ -5,10 +5,10 @@ from scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
-         lexiconmagic=True, transliterate=False, lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST",
-         lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
-         epochs=10, batch_size=32, learning_rate=0.001):
+def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
+          lexiconmagic=True, transliterate=False, lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST",
+          tt_path="./TreeTagger/bin/", lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="",
+          fulltest=False, epochs=10, batch_size=32, learning_rate=0.001, confidence=0.92):
 
     """
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
@@ -35,6 +35,7 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0
     :param epochs: int > number of epochs for training stacked classifier
     :param batch_size: int > batch size for training stacked classifier
     :param learning_rate: float > learning_rate for training stacked classifier
+    :param confidence: float > confidence line for beast tagger
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
@@ -108,31 +109,33 @@ def main(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0
                                 xlines.append(parts[0] + "\t" + parts[c] + lem)
 
                 # train
-                train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset, beast_dir,
+                train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset, beast_dir, tt_path,
                               tune_ratio, lexiconmagic, transliterate)
 
             for tagset in tagsets.keys():
-                train_super(beast_dir, out_path + "/tune_" + tagset, tagset)
+                train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size, learning_rate)
 
         else:
             for tune in tunepaths:
                 tunename = os.path.basename(tune)
                 if tunepaths[tune] == "":
                     tunepaths[tune] = fd.askopenfilename(initialdir="./data/training",
-                                                   title="Select tagged text files for " + tunename,
-                                                   filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
-                                                              ("all files", "*.*")))
+                                                         title="Select tagged text files for " + tunename,
+                                                         filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
+                                                                    ("all files", "*.*")))
 
-                train_super(beast_dir, tunepaths[tune], tunename, epochs, batch_size, learning_rate)
+                train_super(beast_dir, tunepaths[tune], tt_path, tunename,  epochs, batch_size, learning_rate)
 
         if testing:
             print("testing")
-            complex_test(beast_dir, out_path + "/testing", lexiconmagic, transliterate, fulltest, out_path)
+            complex_test(beast_dir, out_path + "/testing", lexiconmagic, transliterate, fulltest, confidence, out_path,
+                         lexicons_path + "default", tt_path)
 
     else:
         print("testing")
-        complex_test(beast_dir, onlytesting, lexiconmagic, transliterate, fulltest, out_path)
+        complex_test(beast_dir, onlytesting, lexiconmagic, transliterate, fulltest, confidence, out_path,
+                     lexicons_path + "default", tt_path)
 
 
 if __name__ == "__main__":
-    main(testing=True)
+    train(onlytesting="./data/output/testing")
