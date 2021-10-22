@@ -8,7 +8,7 @@ from tkinter import Tk, filedialog as fd
 def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
           lexiconmagic=True, transliterate=False, lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST",
           tt_path="./TreeTagger/bin/", lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="",
-          fulltest=False, epochs=10, batch_size=32, learning_rate=0.001, confidence=0.92):
+          fulltest=False, epochs=120, batch_size=32, learning_rate=0.001, confidence=0.92):
 
     """
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
@@ -124,7 +124,7 @@ def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=
                                                          filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
                                                                     ("all files", "*.*")))
 
-                train_super(beast_dir, tunepaths[tune], tt_path, tunename,  epochs, batch_size, learning_rate)
+                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate)
 
         if testing:
             print("testing")

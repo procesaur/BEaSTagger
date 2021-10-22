@@ -197,7 +197,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
 
-def train_super(path, trainfile, tt_path, name="default",  epochs=100, bs=32, lr=0.001, matrix="", taggers_array=None):
+def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=0.001, matrix="", taggers_array=None):
 
     global tempfiles
     global tempdirs
