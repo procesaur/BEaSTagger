@@ -12,7 +12,7 @@ if sys.platform != 'win32':
     signal(SIGPIPE, SIG_DFL)
 
 reldir = os.path.dirname(os.path.abspath(__file__))
-
+xml = r'</?[šđžćč\-_\w]+( [šđžćč\-_\w]+=["\'].*["\'])*/?>'
 
 def read_abbrevs(file):
     abbrevs = {'B': [], 'N': [], 'S': []}
@@ -43,7 +43,7 @@ langs = {
                r'?:com|org|net|gov|edu|int|io|eu|si|hr|rs|ba|me|mk|it|at|hu|bg|ro|al|de|ch|be|dk|se|no|es|pt|ie|fr|fi'
                r'|cl|co|bo|br|gr|ru|uk|us|by|cz|sk|pl|lt|lv|lu|ca|in|tr|il|iq|ir|hk|cn|jp|au|nz)/?\b',
         'htmlesc': r'&#?[a-zšđžčć0-9]+;',
-        'tag': r'</?[a-zšđžčć][\w:]*>|<[a-zšđžčć][\w:]*/?>',
+        'tag': xml,
         'mail': r'[\w.-]+@\w+(?:[.-]\w+)+',
         'mention': r'@[a-zšđžčć0-9_]+',
         'hashtag': r'#\w+(?:[.-]\w+)*',
@@ -212,7 +212,7 @@ def rel_tokenize(text, out_path, lang='sr', document=False, nonstandard=False, c
     for line in text:
         if line.strip() == '':
             continue
-        elif re.match(r"^.*<!--.*$|^.*-->.*$|^.*<.*>.*$", line):
+        elif re.match(xml, line):
             newtext += line + '\n'
             continue
         par_id += 1

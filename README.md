@@ -86,6 +86,7 @@ comeplete list of params:
     :param lemmat: bool > lemmatize the text? > defaults in True
     :param lempos: bool > output lempos columns? > defaults in False
     :param modelnames: string[] > list of specific models (tagsets to be used) - default [] results in all available
+    :param lemmafor: string[] > list of specific models (tagsets to be used) for lemmatization - default [] results in all available
     :param lemmatizers: dict{} > mapping between models (tagsets) and lexicons to be used for their lemmatization
     :param probability: bool > output probability > defaults in False
 

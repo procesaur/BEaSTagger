@@ -5,8 +5,8 @@ from tkinter import Tk, filedialog as fd
 
 def tag(src=None, model="./data/default", out_path="./data/output", lexicons_path="./data/lexicon/",
         tt_path="./TreeTagger/bin/", transliterate=True, lexiconmagic=True, tokenize=True, MWU=False, stdout=False,
-        quiet=True, onlyPOS=False, lemmat=True, lempos=False, modelnames=[], lemmatizers={}, probability=False,
-        confidence=0.93):
+        quiet=True, onlyPOS=False, lemmat=True, lempos=False, modelnames=[], lemmafor=[], lemmatizers={},
+        probability=False, confidence=0.93):
     """
     :param src: string[] > list of files to be tagged (filepaths or urls) - default of NONE results in tkinter input
     :param model: string > path to BEaST model to use for tagging - defaults to ./data/default
@@ -23,6 +23,7 @@ def tag(src=None, model="./data/default", out_path="./data/output", lexicons_pat
     :param lemmat: bool > lemmatize the text? > defaults in True
     :param lempos: bool > output lempos columns? > defaults in False
     :param modelnames: string[] > list of specific models (tagsets to be used) - default [] results in all available
+    :param lemmafor: string[] > list of specific models (tagsets to be used) for lemmatization - default [] results in all available
     :param lemmatizers: dict{} > mapping between models (tagsets) and lexicons to be used for their lemmatization
     :param probability: bool > output probability > defaults in False
     :param confidence: float >
@@ -43,8 +44,13 @@ def tag(src=None, model="./data/default", out_path="./data/output", lexicons_pat
             if m.endswith(".pt"):
                 modelnames.append(m)
 
+    if not lemmafor:
+        for m in modelnames:
+            tagset = m.split('.')[0].lower()
+            lemmafor.append(tagset)
+
     if lemmat and not lemmatizers:
-        for modelx in modelnames:
+        for modelx in lemmafor:
             tagset = modelx.split('.')[0].lower()
             for lexicon in lexicons:
                 if "_" + tagset in lexicon.lower():
@@ -58,4 +64,4 @@ def tag(src=None, model="./data/default", out_path="./data/output", lexicons_pat
 
 
 if __name__ == "__main__":
-    tag(probability=True, files=["Zdravo živo komšo."])
+    tag(lemmafor=['POS'], lempos=True)

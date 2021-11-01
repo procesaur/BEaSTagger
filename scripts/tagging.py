@@ -144,24 +144,25 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                     if "_" + model.split(".")[0].lower() not in tagger.lower():
                         del tagger_answers[tagger]
 
-                delete_cols = ([])
+                if tagger_answers:
+                    delete_cols = ([])
 
-                for i in range(0, len(flat_tagset)):
-                    if "_" + model.split(".")[0].lower() not in flat_tagset[i].lower():
-                        delete_cols.append(i)
+                    for i in range(0, len(flat_tagset)):
+                        if "_" + model.split(".")[0].lower() not in flat_tagset[i].lower():
+                            delete_cols.append(i)
 
-                df = pd.DataFrame(data=matricout.transpose(), columns=flat_tagset)
-                df.drop(df.columns[delete_cols], axis=1, inplace=True)
+                    df = pd.DataFrame(data=matricout.transpose(), columns=flat_tagset)
+                    df.drop(df.columns[delete_cols], axis=1, inplace=True)
 
-                tagger_answers["high"] = ([])
-                high = df.idxmax(axis=1)
+                    tagger_answers["high"] = ([])
+                    high = df.idxmax(axis=1)
 
-                for x in high:
-                    tagger_answers["high"].append(x.split("__")[1])
+                    for x in high:
+                        tagger_answers["high"].append(x.split("__")[1])
 
-                for i, tag in enumerate(newtagsx):
-                    if newprobsx[i] < confidence:
-                        newtagsx[i] = tagger_answers["high"][i]
+                    for i, tag in enumerate(newtagsx):
+                        if newprobsx[i] < confidence:
+                            newtagsx[i] = tagger_answers["high"][i]
 
                 newtags[model].extend(newtagsx)
                 newprobs[model].extend(newprobsx)
@@ -177,8 +178,13 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
 
             noslines = list(line.rstrip('\n') for line in lines if line not in ['\n', ''])
 
-            for model in models:
-                if model in lemmatizers.keys():
+            for mo_del in models:
+                model = ""
+                if mo_del.split('.')[0] in lemmatizers.keys():
+                    model = mo_del.split('.')[0]
+                if mo_del in lemmatizers.keys():
+                    model = mo_del
+                if model != "":
                     lemmas[model] = ([])
                     if ".par" in lemmatizers[model]:
                         with open(out_path + "/temp.tag", 'w', encoding='utf-8') as m:
@@ -194,24 +200,29 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                     else:
                         for i, word in enumerate(noslines):
                             try:
-                                lemmas[model].append(lemdic[model][word][newtags[model][i]].rstrip())
+                                lemmas[model].append(lemdic[model][word][newtags[mo_del][i]].rstrip())
                             except:
                                 lemmas[model].append(word)
 
             for i, l in enumerate(origlines):
                 taggedline = l
-                for model in models:
+                for mo_del in models:
                     if onlyPOS:
-                        taggedline += "\t" + newtags[model][i].split(':')[0]
+                        taggedline += "\t" + newtags[mo_del][i].split(':')[0]
                     else:
-                        taggedline += "\t" + newtags[model][i]
-                    if model in lemmas.keys():
+                        taggedline += "\t" + newtags[mo_del][i]
 
+                    model = ""
+                    if mo_del.split('.')[0] in lemmas.keys():
+                        model = mo_del.split('.')[0]
+                    if mo_del in lemmas.keys():
+                        model = mo_del
+                    if model != "":
                         taggedline += "\t" + lemmas[model][i]
                         if lempos:
-                            taggedline += "\t" + lemmas[model][i] + "_" + newtags[model][i]
+                            taggedline += "\t" + lemmas[model][i] + "_" + newtags[mo_del][i]
                     if probability:
-                        taggedline += "\t" + str(round(newprobs[model][i], 3))
+                        taggedline += "\t" + str(round(newprobs[mo_del][i], 3))
                 taggedline += "\n"
                 taggedlines.append(taggedline)
 
