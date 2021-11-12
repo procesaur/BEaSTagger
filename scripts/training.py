@@ -197,7 +197,8 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
 
-def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=0.001, matrix="", taggers_array=None):
+def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=0.001, transfer_learn=False,
+                matrix="", taggers_array=None):
 
     global tempfiles
     global tempdirs
@@ -210,6 +211,9 @@ def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=
             for t in taggers_arr:
                 if '.par' in t or 'Spacy' in t or t.endswith('sr'):
                     taggers_array.append(path + '/' + t)
+
+        if not transfer_learn:
+            taggers_array = [ta for ta in taggers_array if "_" + name.lower() in ta.lower()]
 
         matrices = ([])
         tagaccus = ([])

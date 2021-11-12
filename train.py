@@ -8,14 +8,14 @@ from tkinter import Tk, filedialog as fd
 def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
           lexiconmagic=True, transliterate=False, lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST",
           tt_path="./TreeTagger/bin/", lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="",
-          fulltest=False, epochs=120, batch_size=32, learning_rate=0.001, confidence=0.92):
+          fulltest=False, epochs=120, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False):
 
     """
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
     header, with the first column being the word and the last lemma.
     Names for tagset in between will be fetched from header - default of NONE results in tkinter input
     :param out_path: string > path to dir where model dir will be created - defaults to ./data/output
-    :param pretrained: bool > do not train standalone taggers - defaults in False
+    :param pretrained: bool > do not train standalone taggers, use tunelist instead - defaults in False
     Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
     :param test_ratio: float > ratio of training testing cutoff - defaults in 1, no cutoff
     :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.9, meaning 0.1 for tuning
@@ -36,6 +36,7 @@ def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=
     :param batch_size: int > batch size for training stacked classifier
     :param learning_rate: float > learning_rate for training stacked classifier
     :param confidence: float > confidence line for beast tagger
+    :param transfer: bool > use transfer learning > defaults in false
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
@@ -124,7 +125,7 @@ def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=
                                                          filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
                                                                     ("all files", "*.*")))
 
-                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate)
+                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate, transfer)
 
         if testing:
             print("testing")
@@ -138,4 +139,4 @@ def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=
 
 
 if __name__ == "__main__":
-    train(onlytesting="./data/output/testing")
+    train(testing=True, test_ratio=0.95)
