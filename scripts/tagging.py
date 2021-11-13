@@ -170,23 +170,27 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
         if not testing:
             tempfiles.append(csv)
 
-        # if there is lemmatization and if it is possible (par file found)
         taggedlines = ([])
+        
+        # if there is lemmatization
         if lemmat:
             if not quiet:
                 print('lemmatizing')
 
             noslines = list(line.rstrip('\n') for line in lines if line not in ['\n', ''])
-
-            for mo_del in models:
-                model = ""
-                if mo_del.split('.')[0] in lemmatizers.keys():
-                    model = mo_del.split('.')[0]
+            for model in models:
+                mo_del = model.split(".")[0]
+                lmodel = ""
                 if mo_del in lemmatizers.keys():
-                    model = mo_del
-                if model != "":
+                    lmodel = mo_del
+                if mo_del.lower() in lemmatizers.keys():
+                    lmodel = mo_del.lower()
+                if mo_del.upper() in lemmatizers.keys():
+                    lmodel = mo_del.upper()
+                
+                if lmodel != "":
                     lemmas[model] = ([])
-                    if ".par" in lemmatizers[model]:
+                    if ".par" in lemmatizers[lmodel]:
                         with open(out_path + "/temp.tag", 'w', encoding='utf-8') as m:
                             for i, word in enumerate(noslines):
                                 m.write(word + '\t' + newtags[model][i] + '\n')
@@ -200,29 +204,23 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                     else:
                         for i, word in enumerate(noslines):
                             try:
-                                lemmas[model].append(lemdic[model][word][newtags[mo_del][i]].rstrip())
+                                lemmas[model].append(lemdic[lmodel][word][newtags[model][i]].rstrip())
                             except:
                                 lemmas[model].append(word)
-
+            print(lemmas.keys())
             for i, l in enumerate(origlines):
                 taggedline = l
-                for mo_del in models:
+                for model in models:
                     if onlyPOS:
-                        taggedline += "\t" + newtags[mo_del][i].split(':')[0]
+                        taggedline += "\t" + newtags[model][i].split(':')[0]
                     else:
-                        taggedline += "\t" + newtags[mo_del][i]
-
-                    model = ""
-                    if mo_del.split('.')[0] in lemmas.keys():
-                        model = mo_del.split('.')[0]
-                    if mo_del in lemmas.keys():
-                        model = mo_del
-                    if model != "":
-                        taggedline += "\t" + lemmas[model][i]
-                        if lempos:
-                            taggedline += "\t" + lemmas[model][i] + "_" + newtags[mo_del][i]
+                        taggedline += "\t" + newtags[model][i]
+                        if model in lemmas.keys():
+                            taggedline += "\t" + lemmas[model][i]
+                            if lempos:
+                                taggedline += "\t" + lemmas[model][i] + "_" + newtags[model][i]
                     if probability:
-                        taggedline += "\t" + str(round(newprobs[mo_del][i], 3))
+                        taggedline += "\t" + str(round(newprobs[model][i], 3))
                 taggedline += "\n"
                 taggedlines.append(taggedline)
 
