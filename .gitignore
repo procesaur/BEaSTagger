@@ -1,6 +1,6 @@
-data\output\*
-data\default\*
-# Byte-compiled / optimized / DLL files
+data/*
+data/lexicon/*
+iled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -126,3 +126,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .idea/
+data/default/newBEaST/matrix-prob.csv
+*.p
+*.col
+*.pt
+*.par
