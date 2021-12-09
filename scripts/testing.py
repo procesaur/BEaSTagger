@@ -58,8 +58,7 @@ def complex_test(tagger="", file="", lexiconmagic=True, transliterate=True, full
 
 
 def test_results(correct_tags, beast_tags, tagger_answers, tagset, matrix, flat_tagset, full=False, dump=""):
-
-    if dump!="":
+    if dump != "":
         with open(dump+"_"+tagset, 'w', encoding='utf-8') as dp:
             dp.write("corr\tbeast\t" + "\t".join(tagger_answers.keys()) +"\n")
             for i,x in enumerate(correct_tags):
