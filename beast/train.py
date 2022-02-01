@@ -16,7 +16,7 @@ def train(file_path="", out_path="", pretrained=False, test_ratio=0.9, tune_rati
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
     header, with the first column being the word and the last lemma.
     Names for tagset in between will be fetched from header - default of NONE results in tkinter input
-    :param out_path: string > path to dir where model dir will be created - defaults to ./data/output
+    :param out_path: string > path to dir where model dir will be created - defaults to current dir
     :param pretrained: bool > do not train standalone taggers, use tunelist instead - defaults in False
     Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
     :param test_ratio: float > ratio of training testing cutoff - defaults in 1, no cutoff
@@ -46,9 +46,9 @@ def train(file_path="", out_path="", pretrained=False, test_ratio=0.9, tune_rati
     if lexicons_path == "":
         lexicons_path = path.join(path.dirname(__file__), "lexicons_path")
     if beast_dir == "":
-    beast_dir = path.join(path.dirname(__file__), "data/output/newBEaST")
+        beast_dir = path.join(path.dirname(__file__), "data/output/newBEaST")
     if tt_path == "":
-    tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
+        tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
     
 
     # initiate lexicons
