@@ -1,13 +1,15 @@
 import os
+from os import path
+
 from beast.scripts.training import train_taggers, train_super
 from beast.scripts.testing import complex_test
 from beast.scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
-          lexiconmagic=True, transliterate=False, lexicons_path="./data/lexicon/", beast_dir="./data/output/newBEaST",
-          tt_path="./TreeTagger/bin/", lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="",
+def train(file_path="", out_path="", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
+          lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
+          tt_path="", lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="",
           fulltest=False, epochs=120, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False):
 
     """
@@ -39,6 +41,15 @@ def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=
     :param transfer: bool > use transfer learning > defaults in false
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
+
+    #initiate paths
+    if lexicons_path == "":
+        lexicons_path = path.join(path.dirname(__file__), "lexicons_path")
+    if beast_dir == "":
+    beast_dir = path.join(path.dirname(__file__), "data/output/newBEaST")
+    if tt_path == "":
+    tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
+    
 
     # initiate lexicons
     lexicons = [x for x in os.listdir(lexicons_path) if "openclass" not in x]
