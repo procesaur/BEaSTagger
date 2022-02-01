@@ -44,7 +44,7 @@ def train(file_path="", out_path="", pretrained=False, test_ratio=0.9, tune_rati
 
     #initiate paths
     if lexicons_path == "":
-        lexicons_path = path.join(path.dirname(__file__), "lexicons_path")
+        lexicons_path = path.join(path.dirname(__file__), "data/lexicon")
     if beast_dir == "":
         beast_dir = path.join(path.dirname(__file__), "data/output/newBEaST")
     if tt_path == "":
