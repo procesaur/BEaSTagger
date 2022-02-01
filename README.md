@@ -5,12 +5,11 @@ Package also provides training of a new system provided the necessary files.
 
 ## Installation
 ###### Google Collab
-        `pip install -e git+https://github.com/procesaur/BEaSTagger.git`
+        `!pip install git+https://github.com/procesaur/BEaSTagger.git`
 
 ###### Linux and Windows
-1. pip: `pip install -e git+https://github.com/procesaur/BEaSTagger.git#egg=beast`
+        `pip install -e git+https://github.com/procesaur/BEaSTagger.git#egg=beast`
 
-   *update*: `pip install -e git+https://github.com/procesaur/BEaSTagger.git#egg=beast --upgrade`
 
 ## Tagging
 
