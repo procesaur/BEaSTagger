@@ -1,4 +1,4 @@
-from scripts.tagging import tag_complex
+from beast.scripts.tagging import tag_complex
 import os
 from tkinter import Tk, filedialog as fd
 
