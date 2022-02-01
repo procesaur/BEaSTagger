@@ -11,7 +11,7 @@ from spacy.cli.convert import _write_docs_to_file
 from spacy.tokens._serialize import DocBin
 from spacy.training.converters.conllu_to_docs import conllu_to_docs
 
-from scripts.tokenizer import rel_tokenize
+from beast.scripts.tokenizer import rel_tokenize
 
 
 def prepare_spacy(conlulines, tempdirs, traindir, devdir):
