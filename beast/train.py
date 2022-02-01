@@ -1,7 +1,7 @@
 import os
-from scripts.training import train_taggers, train_super
-from scripts.testing import complex_test
-from scripts.pipeline import training_prep, ratio_split
+from beast.scripts.training import train_taggers, train_super
+from beast.scripts.testing import complex_test
+from beast.scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
