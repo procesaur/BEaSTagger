@@ -4,10 +4,12 @@ This package provides POS-tagging using a system composed of [treetagger](https:
 Package also provides training of a new system provided the necessary files.
 
 ## Installation
-###### Linux and Windows
-1. pip: `pip install -e git+https://github.com/procesaur/BEaSTagger.git#egg=beast`
+###### Google Collab
+        !pip install git+https://github.com/procesaur/BEaSTagger.git
 
-   *update*: `pip install -e git+https://github.com/procesaur/BEaSTagger.git#egg=beast --upgrade`
+###### Linux and Windows
+        pip install -e git+https://github.com/procesaur/BEaSTagger.git#egg=beast
+
 
 ## Tagging
 
