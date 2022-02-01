@@ -139,4 +139,4 @@ def train(file_path="", out_path="./data/output/", pretrained=False, test_ratio=
 
 
 if __name__ == "__main__":
-    train(testing=True, test_ratio=0.95)
+    train(testing=True, test_ratio=0.95, beast_dir="./data/output/newBEaST150", pretrained=True, tunepaths={"UD":"./data/output/tune_UD"})
