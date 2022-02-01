@@ -3,14 +3,14 @@ import numpy as np
 import re
 import pandas as pd
 
-from scripts.conversion import convert as conv
-from TreeTagger.treetagger import tag_treetagger
-from SpacyTagger.spacyworks import tag_spacytagger
+from beast.scripts.conversion import convert as conv
+from beast.TreeTagger.treetagger import tag_treetagger
+from beast.SpacyTagger.spacyworks import tag_spacytagger
 # from Classla.TagClassla import tag_classla
-from scripts.torchworks import test_prob_net
-from scripts.pipeline import segmentize, big_chunkus, rem_xml, write_chunks, lexmagic
-from scripts.tokenizer import rel_tokenize
-from scripts.pipeline import probtagToMatrix, get_taggers, lemmas_dic, lexentries
+from beast.scripts.torchworks import test_prob_net
+from beast.scripts.pipeline import segmentize, big_chunkus, rem_xml, write_chunks, lexmagic
+from beast.scripts.tokenizer import rel_tokenize
+from beast.scripts.pipeline import probtagToMatrix, get_taggers, lemmas_dic, lexentries
 
 
 def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=False, transliterate=True,

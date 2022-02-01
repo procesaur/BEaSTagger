@@ -3,15 +3,15 @@ import numpy as np
 from pathlib import Path
 from distutils.dir_util import remove_tree
 
-from scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
+from beast.scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
 # from scripts.pipeline import prepare_stanza
-from scripts.conversion import convert as conv
-from scripts.torchworks import train_prob_net
-from scripts.tagging import tag_any
+from beast.scripts.conversion import convert as conv
+from beast.scripts.torchworks import train_prob_net
+from beast.scripts.tagging import tag_any
 # from Classla.TrainClassla import train_stanza
-from SpacyTagger.spacyworks import train_spacy
-from SpacyTagger.spacyworks import gettagmap
-from TreeTagger.treetagger import train_treetagger
+from beast.SpacyTagger.spacyworks import train_spacy
+from beast.SpacyTagger.spacyworks import gettagmap
+from beast.TreeTagger.treetagger import train_treetagger
 
 
 spacy_traindir = "/train.spacy"

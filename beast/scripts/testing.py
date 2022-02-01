@@ -1,7 +1,7 @@
 from sklearn.metrics import classification_report, precision_recall_fscore_support as score
-from scripts.tagging import tag_complex
-from scripts.pipeline import lexentries, training_prep, lexmagic
-from scripts.conversion import convert as conv
+from beast.scripts.tagging import tag_complex
+from beast.scripts.pipeline import lexentries, training_prep, lexmagic
+from beast.scripts.conversion import convert as conv
 
 import pandas as pd
 
