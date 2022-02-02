@@ -6,7 +6,7 @@ def package_files(package, directory):
     paths = []
     for (path, directories, filenames) in os.walk(package+"\\"+directory):
         for filename in filenames:
-            paths.append(os.path.join(directory, filename))
+            paths.append(os.path.join('..', directory, filename))
     return paths
 
 
@@ -24,7 +24,7 @@ setup(
         'scikit-learn~=0.22.2.post1',
         'setuptools>=49.2.1'
     ],
-    package_data={'beast': ''},
+    package_data={'beast':package_files('beast', 'data\\default')},
     include_package_data=True,
     url='https://github.com/procesaur/BEaSTagger',
     license='GPL',
