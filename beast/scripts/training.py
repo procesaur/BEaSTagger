@@ -154,7 +154,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
     # TreeTagger training
     if treetagger:
         print("training TreeTagger")
-        tt_in_path = out_path + 'TreeTagger_train'
+        tt_in_path = out_path + '/TreeTagger_train'
         tt_out_path = newdir + '/TreeTagger' + name + '.par'
         train_treetagger(parameters, lex_path, oc_path, tt_in_path, tt_out_path, tt_path)
 
