@@ -24,7 +24,8 @@ setup(
         'scikit-learn~=0.22.2.post1',
         'setuptools>=49.2.1'
     ],
-    package_data={'beast': package_files('beast', 'data/default')},
+    package_data={'beast': ''},
+    data_files=[('beast/data/default', [package_files('beast', 'data/default')])],
     include_package_data=True,
     url='https://github.com/procesaur/BEaSTagger',
     license='GPL',
