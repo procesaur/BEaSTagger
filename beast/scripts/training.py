@@ -169,7 +169,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
         spacy_destdir = newdir + '/Spacy' + name
         spacy_outpath = Path(out_path + "/spacyTemp")
-        cfgpath = path.join(path.dirname(__file__), "SpacyTagger/config.cfg")
+        cfgpath = path.join(path.dirname(__file__), "../SpacyTagger/config.cfg")
         trainpath = out_path + spacy_traindir
         devpath = out_path + spacy_devdir
         tempdirs.append(spacy_outpath)
