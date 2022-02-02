@@ -9,8 +9,8 @@ from tkinter import Tk, filedialog as fd
 
 def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="newBEaST",
-          tt_path="", lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="",
-          fulltest=False, epochs=120, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False):
+          lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
+          epochs=120, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False):
 
     """
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
@@ -42,12 +42,12 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
-    #initiate paths
+    # initiate paths
     if lexicons_path == "":
         lexicons_path = path.join(path.dirname(__file__), "data/lexicon/")
-    if tt_path == "":
-        tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
-    
+    tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
+
+    print("test")
 
     # initiate lexicons
     lexicons = [x for x in os.listdir(lexicons_path) if "openclass" not in x]
