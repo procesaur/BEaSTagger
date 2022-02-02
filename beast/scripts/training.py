@@ -2,6 +2,7 @@ import os
 import numpy as np
 from pathlib import Path
 from distutils.dir_util import remove_tree
+from os import path
 
 from beast.scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
 # from scripts.pipeline import prepare_stanza
@@ -168,7 +169,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
         spacy_destdir = newdir + '/Spacy' + name
         spacy_outpath = Path(out_path + "/spacyTemp")
-        cfgpath = Path("./SpacyTagger/config.cfg")
+        cfgpath = path.join(path.dirname(__file__), "SpacyTagger/config.cfg")
         trainpath = out_path + spacy_traindir
         devpath = out_path + spacy_devdir
         tempdirs.append(spacy_outpath)

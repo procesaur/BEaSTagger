@@ -1,8 +1,8 @@
-numpy~=1.21
+numpy>=1.19.5
 spacy~=3.0.6
-tqdm~=4.44.1
+tqdm>=4.44.1
 pandas~=1.0.3
-torch~=1.8.1
-sklearn~=0.0
+torch>=1.8.1
+sklearn>=0.0
 scikit-learn~=0.22.2.post1
-setuptools~=49.2.1
+setuptools>=49.2.1
