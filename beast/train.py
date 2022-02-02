@@ -47,8 +47,6 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
         lexicons_path = path.join(path.dirname(__file__), "data/lexicon/")
     tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
 
-    print("test")
-
     # initiate lexicons
     lexicons = [x for x in os.listdir(lexicons_path) if "openclass" not in x]
     openclass = [x for x in os.listdir(lexicons_path) if "openclass" in x]
