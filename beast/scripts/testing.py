@@ -61,12 +61,11 @@ def test_results(correct_tags, beast_tags, tagger_answers, tagset, matrix, flat_
     if dump != "":
         with open(dump+"_"+tagset, 'w', encoding='utf-8') as dp:
             dp.write("corr\tbeast\t" + "\t".join(tagger_answers.keys()) +"\n")
-            for i,x in enumerate(correct_tags):
+            for i, x in enumerate(correct_tags):
                 dp.write(x+"\t"+beast_tags[i])
                 for k in tagger_answers.keys():
                     dp.write("\t"+tagger_answers[k][i])
                 dp.write("\n")
-
 
     taggers = list(tagger_answers.keys())
 
