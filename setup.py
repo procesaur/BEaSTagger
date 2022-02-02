@@ -5,7 +5,7 @@ setup(
     version='1.00',
     packages=['beast'],
     install_requires=[
-        'torch~=1.8.1',
+        'torch>=1.8.1',
         'spacy~=3.0.6',
         'tqdm>=4.44.1',
         'numpy>=1.19.5',
