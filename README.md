@@ -100,3 +100,63 @@ note>
 note>
    if you are using windows and are located in the module folder you can tag via running the train.py file.
    you will be prompted for the file you want to use for training and results will be written in default dir.
+   
+   
+## Usecase without additional data (for Serbian) - google colab
+
+        !pip install git+https://github.com/procesaur/BEaSTagger.git
+        !chmod -R 775 '/usr/local/lib/python3.7/dist-packages/beast/TreeTagger/bin/'
+        from beast.train import train
+        from beast.tag import tag
+        
+        
+        train(file_path="/usr/local/lib/python3.7/dist-packages/beast/data/training/SrpKor4Tagging", testing=True)
+        
+        
+preparing...
+
+ℹ Grouping every 10 sentences into a document.
+
+ℹ Grouping every 10 sentences into a document.
+
+training TreeTagger
+
+training Spacy Tagger
+
+...
+
+...
+
+tagger	w_prec	w_rec	w_f1	m_prec	m_rec	m_f1
+
+Spacy_pos	0.866	0.866	0.865	0.896	0.709	0.727
+
+TreeTagger_pos.par	0.937	0.939	0.936	0.912	0.788	0.804
+
+Spacy_pos_right	0.873	0.871	0.871	0.849	0.687	0.701
+
+TreeTagger_pos_right.par	0.928	0.93	0.927	0.891	0.781	0.788
+
+high	0.971	0.971	0.97	0.947	0.84	0.855
+
+jury	0.971	0.971	0.97	0.95	0.829	0.848
+
+BEaST	0.973	0.973	0.972	0.944	0.866	0.87
+                
+                
+        tag("Dobro veče, dobri moji ljudi!", model="newBEaST", stdout=True)
+        
+        
+Dobrodošli	ADJ	dobrodošao	A	dobrodošao
+
+,	PUNCT	,	PUNCT	,
+
+dobri	ADJ	dobar	A	dobar
+
+moji	DET	moj	PRO	moj
+
+ljudi	NOUN	ljudi	N	ljudi
+
+!	PUNCT	!	SENT	!
+
+
