@@ -25,7 +25,6 @@ setup(
         'setuptools>=49.2.1'
     ],
     package_data={'beast': ''},
-    data_files=[('beast/data/default', package_files('beast', 'data/default'))],
     include_package_data=True,
     url='https://github.com/procesaur/BEaSTagger',
     license='GPL',
