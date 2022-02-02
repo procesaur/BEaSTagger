@@ -207,7 +207,7 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                                 lemmas[model].append(lemdic[lmodel][word][newtags[model][i]].rstrip())
                             except:
                                 lemmas[model].append(word)
-            print(lemmas.keys())
+            # print(lemmas.keys())
             for i, l in enumerate(origlines):
                 taggedline = l
                 for model in models:
@@ -250,7 +250,7 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
         if not testing:
             if stdout:
                 for line in finalines:
-                    print(line)
+                    print(line.rstrip('\n'))
             else:
                 if os.path.isfile(filesmap[file]):
                     writepath = out_path + '/' + os.path.basename(filesmap[file]) + "_" + par_name + ".tt"
