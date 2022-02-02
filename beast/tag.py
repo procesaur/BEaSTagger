@@ -64,6 +64,9 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
             if modelx not in lemmatizers:
                 lemmatizers[modelx] = lex_path
 
+    print(lemmafor)
+    print(lemmatizers)
+
     if isinstance(src, str):
         tag_complex(model, lex_path, [src], out_path, tt_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS,
                     lemmat, False, quiet, modelnames, lemmatizers, lempos, probability, stdout, confidence)

@@ -1,4 +1,14 @@
 from setuptools import setup
+import os
+
+
+def package_files(directory):
+    paths = []
+    for (path, directories, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join('..', path, filename))
+    return paths
+
 
 setup(
     name='BEaSTagger',
@@ -14,7 +24,7 @@ setup(
         'scikit-learn~=0.22.2.post1',
         'setuptools>=49.2.1'
     ],
-    package_data={'srpski': ['sr.abbrev']},
+    package_data={'beast': package_files('data/default')},
     include_package_data=True,
     url='https://github.com/procesaur/BEaSTagger',
     license='GPL',
