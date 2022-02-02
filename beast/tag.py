@@ -1,18 +1,17 @@
 from beast.scripts.tagging import tag_complex
 import os
+from os import path
 from tkinter import Tk, filedialog as fd
 
 
-def tag(src=None, model="./data/default", out_path="./data/output", lexicons_path="./data/lexicon/",
-        tt_path="./TreeTagger/bin/", transliterate=True, lexiconmagic=True, tokenize=True, MWU=False, stdout=False,
-        quiet=True, onlyPOS=False, lemmat=True, lempos=False, modelnames=[], lemmafor=[], lemmatizers={},
-        probability=False, confidence=0.93):
+def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, lexiconmagic=True,
+        tokenize=True, MWU=False, stdout=False, quiet=True, onlyPOS=False, lemmat=True, lempos=False,
+        modelnames=[], lemmafor=[], lemmatizers={}, probability=False, confidence=0.93):
     """
     :param src: string[] > list of files to be tagged (filepaths or urls) - default of NONE results in tkinter input
     :param model: string > path to BEaST model to use for tagging - defaults to ./data/default
     :param out_path: string > path to dir where tagged files will be written - defaults to ./data/output
     :param lexicons_path: string > path to dir where lexicons are located - defaults to ./data/lexicon/
-    :param tt_path: string > path to treetagger folder where executables are located - defaults to ./TreeTagger/bin/
     :param transliterate: bool > transliterate text into latin? - defaults in True
     :param lexiconmagic: bool > adapt text to a lexicon for perhaps improved results? - defaults in True
     :param tokenize: bool > tokenize the text? - defaults in True, only use False if supplying tokenized text
@@ -29,6 +28,13 @@ def tag(src=None, model="./data/default", out_path="./data/output", lexicons_pat
     :param confidence: float >
     :return: this function outputs tagged file onto said location - no returns
     """
+
+    # initiate paths
+    if model == "":
+        model = path.join(path.dirname(__file__), "data/default")
+    if lexicons_path == "":
+        lexicons_path = path.join(path.dirname(__file__), "data/lexicon/")
+    tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
 
     # initiate lexicons
     lexicons = [x for x in os.listdir(lexicons_path) if "openclass" not in x]
