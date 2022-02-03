@@ -1,5 +1,6 @@
 data/*
 data/lexicon/*
+beast/data/default/*
 beast/data/output/*
 iled / optimized / DLL files
 __pycache__/

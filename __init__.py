@@ -1,7 +1,8 @@
-from train import train
-from tag import tag
+from beast.train import train
+from beast.tag import tag
 
 
-train(test_ratio=0.9, transliterate=True, epochs=100)
+#train(file_path="beast/data/training/SrpKor4Tagging", test_ratio=0.9)
+train(onlytesting="testing")
 #train(onlytesting="./data/output/testing", fulltest=True)
 #tag(model="./data/output/final", transliterate=True)

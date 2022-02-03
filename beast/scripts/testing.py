@@ -1,4 +1,4 @@
-from sklearn.metrics import classification_report, precision_recall_fscore_support as score
+from sklearn.metrics import classification_report, precision_recall_fscore_support as score, accuracy_score as accur
 from beast.scripts.tagging import tag_complex
 from beast.scripts.pipeline import lexentries, training_prep, lexmagic
 from beast.scripts.conversion import convert as conv
@@ -106,12 +106,11 @@ def test_results(correct_tags, beast_tags, tagger_answers, tagset, matrix, flat_
             print(a)
             print(classification_report(correct_tags, tagger_answers[a], zero_division=1, digits=3))
     else:
-        print("\t".join(["tagger", "w_prec", "w_rec", "w_f1", "m_prec", "m_rec", "m_f1"]))
+        print("\t".join(["tagger", "prec", "rec", "f1", "acc"]))
         for a in tagger_answers:
-            macro_prec, macro_rcl, macro_f, support = score(correct_tags, tagger_answers[a],
-                                                            average='macro', zero_division=1)
+            acc = accur(correct_tags, tagger_answers[a])
             w_prec, w_rcl, w_f, support = score(correct_tags, tagger_answers[a], average='weighted', zero_division=1)
-            vals = [w_prec, w_rcl, w_f, macro_prec, macro_rcl, macro_f]
+            vals = [w_prec, w_rcl, w_f, acc]
             for i, val in enumerate(vals):
                 vals[i] = str(round(val, 3))
             print(a+"\t" + "\t".join(vals))
