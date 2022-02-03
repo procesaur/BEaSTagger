@@ -135,7 +135,7 @@ def gettagmap(uniqpos):
     return tagdic
 
 
-def train_spacy(cfgpath, trainpath, devpath, temp, destdir, spacygpu=1):
+def train_spacy(cfgpath, trainpath, devpath, temp, destdir, spacygpu=0):
     if not os.path.isdir(destdir):
         os.mkdir(destdir)
     if not os.path.isdir(temp):
