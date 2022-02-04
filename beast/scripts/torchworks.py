@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import json
 
 import torch
 import torch.nn as nn
@@ -9,11 +10,6 @@ from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report
-
-try:
-    import pickle5 as pickle
-except ImportError:  # python 3.x
-    import pickle
 
 
 class MulticlassClassification(nn.Module):
@@ -56,7 +52,7 @@ def test_prob_net(csv, par_path, out_path, modelname='net-prob.pt'):
     modelnameb = modelname.split(".pt")[0]+".pt"
 
     with open(par_path + '/' + modelnameb + '.col', 'rb') as p:
-        colnames = pickle.load(p)
+        colnames = json.load(p)
 
     colnames = list(col for col in colnames if col != 'result')
 
@@ -69,7 +65,7 @@ def test_prob_net(csv, par_path, out_path, modelname='net-prob.pt'):
     input, output = np.array(input), np.array(output)
 
     with open(par_path + '/' + modelnameb + '.p', 'rb') as p:
-        class2idx = pickle.load(p)
+        class2idx = json.load(p)
     idx2class = {v: k for k, v in class2idx.items()}
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -131,7 +127,7 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
 
     if os.path.isfile(out_path + '.p'):
         with open(out_path + '.p', 'rb') as p:
-            class2idx = pickle.load(p)
+            class2idx = json.load(p)
         idx2class = {v: k for k, v in class2idx.items()}
     else:
         print('classmap not found : ' + out_path + '.p')
@@ -310,17 +306,17 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
     torch.save(model.state_dict(), out_path)
 
     with open(out_path + '.p', 'wb') as fp:
-        pickle.dump(class2idx, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        json.dump(class2idx, fp)
 
     colnames = ([])
     for col in dataset.columns:
         colnames.append(col)
 
     with open(out_path + '.p', 'wb') as fp:
-        pickle.dump(class2idx, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        json.dump(class2idx, fp)
 
     with open(out_path + '.col', 'wb') as fp:
-        pickle.dump(colnames, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        json.dump(colnames, fp)
 
     y_pred_list = []
 
