@@ -12,7 +12,7 @@ def package_files(package, directory):
 
 setup(
     name='BEaSTagger',
-    version='1.0.8',
+    version='1.0.9',
     packages=['beast'],
     install_requires=[
         'torch>=1.8.1',
