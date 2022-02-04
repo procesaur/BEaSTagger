@@ -31,7 +31,7 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
 
     # initiate paths
     if model == "":
-        model = path.join(path.dirname(__file__), "data/default")
+        model = path.join(path.dirname(__file__), "data/models/default")
     if lexicons_path == "":
         lexicons_path = path.join(path.dirname(__file__), "data/lexicon/")
     tt_path = path.join(path.dirname(__file__), "TreeTagger/bin/")
