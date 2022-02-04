@@ -65,7 +65,10 @@ def test_prob_net(csv, par_path, out_path, modelname='net-prob.pt'):
     input, output = np.array(input), np.array(output)
 
     with open(par_path + '/' + modelnameb + '.p', 'rb') as p:
-        class2idx = json.load(p)
+        class2idx_json = json.load(p)
+    class2idx = {}
+    for ci in class2idx_json:
+        class2idx[ci[0]] = ci[1]
     idx2class = {v: k for k, v in class2idx.items()}
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

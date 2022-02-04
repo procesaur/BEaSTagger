@@ -2,6 +2,7 @@ data/*
 data/lexicon/*
 beast/data/default/*
 beast/data/output/*
+beast/data/models/*
 iled / optimized / DLL files
 __pycache__/
 *.py[cod]
