@@ -12,13 +12,13 @@ def package_files(package, directory):
 
 setup(
     name='BEaSTagger',
-    version='1.0.9',
+    version='1.0.10',
     packages=['beast'],
     install_requires=[
         'torch>=1.8.1',
         'spacy~=3.0.6',
         'tqdm>=4.44.1',
-        'numpy>=1.19.5',
+        'numpy>=1.21',
         'pandas>=1.0.3',
         'sklearn>=0.0',
         'scikit-learn~=0.22.2.post1',

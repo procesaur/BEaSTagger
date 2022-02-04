@@ -250,8 +250,8 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
 
         header = "word\t"
         for x in models:
-            xx = "\t" + x
-            if x in lemmas.keys:
+            xx = "\ttag_" + x
+            if x in list(lemmas.keys()):
                 xx += "\tlemma_" + x
                 if lempos:
                     xx += "\tlempos_" + x

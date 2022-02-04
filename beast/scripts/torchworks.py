@@ -22,17 +22,6 @@ class MulticlassClassification(nn.Module):
         return x
 
 
-class SingleTagModel(nn.Module):
-    def __init__(self, n):
-        super(SingleTagModel, self).__init__()
-        self.relu = nn.ReLU()
-        self.fc1 = nn.Linear(n, 1)
-
-    def forward(self, x):
-        x = self.relu(self.fc1(x))
-        return x
-
-
 class ClassifierDatasetx(Dataset):
 
     def __init__(self, X_data, y_data):
@@ -65,10 +54,7 @@ def test_prob_net(csv, par_path, out_path, modelname='net-prob.pt'):
     input, output = np.array(input), np.array(output)
 
     with open(par_path + '/' + modelnameb + '.p', 'rb') as p:
-        class2idx_json = json.load(p)
-    class2idx = {}
-    for ci in class2idx_json:
-        class2idx[ci[0]] = ci[1]
+        class2idx = json.load(p)
     idx2class = {v: k for k, v in class2idx.items()}
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -146,10 +132,15 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
 
     # print(dataset.head)
 
-    X_trainval, X_test, y_trainval, y_test = train_test_split(input, output, test_size=0.01,
-                                                              random_state=66)
-    X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=val_size, stratify=y_trainval,
-                                                      random_state=20)
+    for i in range(30):
+        try:
+            X_trainval, X_test, y_trainval, y_test = train_test_split(input, output, test_size=0.01)
+
+            X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=val_size,
+                                                              stratify=y_trainval)
+            break
+        except ValueError as e:
+            print(str(e) + " ...trying again")
 
     X_train, y_train = np.array(X_train), np.array(y_train)
     X_val, y_val = np.array(X_val), np.array(y_val)
@@ -308,17 +299,17 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
 
     torch.save(model.state_dict(), out_path)
 
-    with open(out_path + '.p', 'wb') as fp:
+    with open(out_path + '.p', 'w', encoding="utf-8") as fp:
         json.dump(class2idx, fp)
 
     colnames = ([])
     for col in dataset.columns:
         colnames.append(col)
 
-    with open(out_path + '.p', 'wb') as fp:
+    with open(out_path + '.p', 'w', encoding="utf-8") as fp:
         json.dump(class2idx, fp)
 
-    with open(out_path + '.col', 'wb') as fp:
+    with open(out_path + '.col', 'w', encoding="utf-8") as fp:
         json.dump(colnames, fp)
 
     y_pred_list = []

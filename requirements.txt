@@ -1,4 +1,4 @@
-numpy~=1.18.2
+numpy>=1.21
 spacy~=3.0.6
 tqdm>=4.44.1
 pandas~=1.0.3
