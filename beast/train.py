@@ -148,4 +148,4 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
 
 
 if __name__ == "__main__":
-    train(pretrained=True, tunepaths={"POS":"tune_pos"}, beast_dir="./data/models/default")
+    train()
