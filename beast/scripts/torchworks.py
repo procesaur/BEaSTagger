@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report
 
 try:
-    import cPickle as pickle
+    import pickle5 as pickle
 except ImportError:  # python 3.x
     import pickle
 
@@ -19,39 +19,10 @@ except ImportError:  # python 3.x
 class MulticlassClassification(nn.Module):
     def __init__(self, num_feature, num_class):
         super(MulticlassClassification, self).__init__()
-
-        self.layer_1 = nn.Linear(num_feature, 256)
-        self.layer_2 = nn.Linear(256, 128)
-        self.layer_3 = nn.Linear(128, 64)
         self.layer_out = nn.Linear(num_feature, num_class)
 
-        self.relu = nn.ReLU()
-        self.sm = nn.Softmax()
-        self.dropout1 = nn.Dropout(p=0.5)
-        self.dropout2 = nn.Dropout(p=0.5)
-        self.batchnorm1 = nn.BatchNorm1d(256)
-        self.batchnorm2 = nn.BatchNorm1d(128)
-        self.batchnorm3 = nn.BatchNorm1d(64)
-
     def forward(self, x):
-        # x = self.layer_1(x)
-        # x = self.batchnorm1(x)
-        # x = self.dropout1(x)
-        # x = self.relu(x)
-
-        # x = self.layer_2(x)
-        # x = self.batchnorm2(x)
-        # x = self.relu(x)
-
-
-        # x = self.layer_3(x)
-        # x = self.batchnorm3(x)
-        # x = self.relu(x)
-        # x = self.dropout2(x)
-
         x = self.layer_out(x)
-        #x = self.sm(x)
-
         return x
 
 
@@ -63,40 +34,6 @@ class SingleTagModel(nn.Module):
 
     def forward(self, x):
         x = self.relu(self.fc1(x))
-        return x
-
-
-class MulticlassClassification2(nn.Module):
-    def __init__(self, num_feature, num_class, nodedict):
-        super(MulticlassClassification2, self).__init__()
-
-        ntags = len(nodedict)
-        self.linears = nn.ModuleList([])
-        self.list = ([])
-        for d in nodedict:
-            self.linears.append(SingleTagModel(len(nodedict[d])))
-            self.list.append(nodedict[d])
-
-        self.layer_1 = nn.Linear(num_feature, ntags)
-        self.layer_out = nn.Linear(ntags, num_class)
-        self.relu = nn.ReLU()
-        self.batchnorm1 = nn.BatchNorm1d(ntags)
-
-    def forward(self, x):
-        catarray = ([])
-        for i, m in enumerate(self.linears):
-            newt = torch.LongTensor(self.list[i])
-            newx = x.index_select(1, newt)
-            newx = self.relu(self.linears[i](newx))
-            catarray.append(newx)
-
-        x = torch.cat(catarray, 1)
-        # x = self.layer_1(x)
-        # x = self.batchnorm1(x)
-        # x = self.relu(x)
-
-        x = self.layer_out(x)
-
         return x
 
 
