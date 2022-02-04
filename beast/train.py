@@ -81,6 +81,10 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=1, tune_ratio
                     tf.write("lemma\n")
                     tf.write(''.join(test).rstrip('\n'))
 
+            else:
+                train, test = ratio_split(test_ratio, lines)
+                lines = ''.join(train).rstrip('\n').split('\n')
+
             # prepare lexicon paths for treetagger if not supplied
             if lex_paths == {}:
                 for tagset in tagsets.keys():
