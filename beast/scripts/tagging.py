@@ -171,7 +171,8 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
             tempfiles.append(csv)
 
         taggedlines = ([])
-        
+
+
         # if there is lemmatization
         if lemmat:
             if not quiet:
@@ -247,8 +248,20 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
         else:
             finalines = taggedlines
 
+        header = "word\t"
+        for x in models:
+            xx = "\t" + x
+            if x in lemmas.keys:
+                xx += "\tlemma_" + x
+                if lempos:
+                    xx += "\tlempos_" + x
+            if probability:
+                xx += "\tprobability"
+            header += xx
+
         if not testing:
             if stdout:
+                print(header)
                 for line in finalines:
                     print(line.rstrip('\n'))
             else:
@@ -257,6 +270,7 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                 else:
                     writepath = out_path + "/input_" + par_name + ".tt"
                 with open(writepath, 'a+', encoding='utf-8') as m:
+                    m.write(header)
                     for line in finalines:
                         m.write(line)
 

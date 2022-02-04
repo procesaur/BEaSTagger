@@ -74,4 +74,4 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
 
 
 if __name__ == "__main__":
-    tag("Dobro veče, dobri moji ljudi!", stdout=True)
+    tag()
