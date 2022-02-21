@@ -1,9 +1,10 @@
 numpy>=1.21
-spacy~=3.0.6
+spacy~=3.2.0
 tqdm>=4.44.1
-pandas~=1.0.3
+pandas~=1.3.4
 torch>=1.8.1
 sklearn>=0.0
-scikit-learn~=0.22.2.post1
+scikit-learn~=1.0.2
 setuptools>=49.2.1
-requests~=2.23.0
+requests~=2.26.0
+classla~=1.1.0
