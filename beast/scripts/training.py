@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 from distutils.dir_util import remove_tree
 from os import path
+from distutils.dir_util import copy_tree
 
 from beast.scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
 from beast.scripts.pipeline import prepare_stanza
@@ -189,16 +190,20 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
     if stanzatagger:
         print("training Stanza tagger")
-        destdir = newdir + '/Stanza' + name
-        if not os.path.isdir(destdir):
-            os.mkdir(destdir)
-        if not os.path.isdir(out_path + '/StanzaTemp'):
-            os.mkdir(out_path + '/StanzaTemp')
+        pt = path.dirname(__file__) + "/../Classla/standard.ptc"
 
-        pt = path.dirname(__file__) + "/../Classla/standard.pt"
-        train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, out_path+'/StanzaTemp', pt)
-        tempdirs.append(out_path + '/StanzaTemp')
-        # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
+        stanza_destdir = newdir + '/Stanza' + name
+        stanza_outpath = Path(out_path + "/stanzaTemp")
+        train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, stanza_outpath, pt)
+        tempdirs.append(stanza_outpath)
+        copy_tree(stanza_outpath + '/model-best', stanza_destdir)
+
+        if bidir:
+            stanza_destdir = newdir + '/StanzaR' + name
+            stanza_outpath = out_path + "/stanzaRTemp"
+            train_stanza(out_path + stanzaR_traindir, out_path + stanzaR_devdir, stanza_outpath, pt)
+            tempdirs.append(stanza_outpath)
+            copy_tree(stanza_outpath + '/model-best', stanza_destdir)
 
 
 def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=0.001,

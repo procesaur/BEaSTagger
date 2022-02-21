@@ -8,6 +8,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+!*.pt
+
+!beast/Classla/*
+
 # C extensions
 *.so
 
