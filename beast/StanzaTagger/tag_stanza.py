@@ -13,7 +13,7 @@ if probability:
     lemmatize = False
 
 
-def tag_classla(par_path, file_path, out_path, probability, lemmatize, tokenize):
+def tag_stanza(par_path, file_path, out_path, probability, lemmatize, tokenize):
 
     with open(file_path, 'r', encoding='utf-8') as f:
         text = f.read().rstrip()

@@ -66,15 +66,19 @@ def parse_args(args=None):
 
 
 def train_stanza(train_file, dev_in_file, out, pretrain=None):
-    batch_size = "30"
+    batch_size = "64"
+    max_steps = "120"
 
     train_args = ["--wordvec_dir", None,
                   "--wordvec_file", pretrain,
                   "--train_file", train_file,
                   "--eval_file", dev_in_file,
-                  "--output_file", out,
-                  "--gold_file", out+'.gold',
+                  "--data_dir", out,
+                  "--save_dir", out,
+                  "--output_file", out+"/temp",
+                  "--gold_file", dev_in_file,
                   "--batch_size", batch_size,
+                  "--max_steps", max_steps,
                   "--lang", "sr",
                   "--shorthand", "sr_set",
                   "--wordvec_pretrain_file", pretrain,
