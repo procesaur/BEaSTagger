@@ -1,8 +1,8 @@
 import sys
 import pathlib
-import classla
+import stanza
 import re
-from beast.Classla.ScriptsClassla import getScores
+from beast.StanzaTagger.stanzaworks import getScores
 
 
 probability = False
@@ -22,7 +22,7 @@ def tag_classla(par_path, file_path, out_path, probability, lemmatize, tokenize)
     par = pathlib.PurePath(par_path).name
     pardir = par_path.rstrip(par + '/')
 
-    tokens = classla.Pipeline(par, dir=pardir, processors='tokenize', logging_level="FATAL")
+    tokens = stanza.Pipeline(par, dir=pardir, processors='tokenize', logging_level="FATAL")
 
     if tokenize:
         document = tokens.process(doc=text)
@@ -37,7 +37,7 @@ def tag_classla(par_path, file_path, out_path, probability, lemmatize, tokenize)
     if lemmatize:
         lem = ",lemma"
 
-    nlp = classla.Pipeline(par, dir=pardir, processors='tokenize,pos'+lem, logging_level="FATAL")
+    nlp = stanza.Pipeline(par, dir=pardir, processors='tokenize,pos'+lem, logging_level="FATAL")
 
     scores, preds, newdoc = getScores(nlp, document, probability, lemmatize)
 

@@ -6,7 +6,7 @@ import pandas as pd
 from beast.scripts.conversion import convert as conv
 from beast.TreeTagger.treetagger import tag_treetagger
 from beast.SpacyTagger.spacyworks import tag_spacytagger
-# from Classla.TagClassla import tag_classla
+# from StanzaTagger.TagClassla import tag_classla
 from beast.scripts.torchworks import test_prob_net
 from beast.scripts.pipeline import segmentize, big_chunkus, rem_xml, write_chunks, lexmagic
 from beast.scripts.tokenizer import rel_tokenize
