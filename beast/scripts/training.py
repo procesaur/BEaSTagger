@@ -4,8 +4,6 @@ from pathlib import Path
 from distutils.dir_util import remove_tree
 from os import path
 from distutils.dir_util import copy_tree
-from tkinter import Tk, filedialog as fd
-
 
 from beast.scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
 from beast.scripts.pipeline import prepare_stanza
@@ -192,10 +190,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
     if stanzatagger:
         print("training Stanza tagger")
-        pt = path.dirname(__file__) + "/../StanzaTagger/standard.pt"
-        if not os.path.isdir(pt):
-            pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
-                                    filetypes=(("tagged files", "*.pt"),("all files", "*.*")))
+        pt = path.dirname(__file__) + "/../StanzaTagger/standard.ptc"
 
         stanza_destdir = newdir + '/Stanza' + name
         stanza_outpath = out_path + "/stanzaTemp"
