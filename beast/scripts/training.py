@@ -5,11 +5,11 @@ from distutils.dir_util import remove_tree
 from os import path
 
 from beast.scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
-from beast.scripts.pipeline import prepare_stanza
+# from scripts.pipeline import prepare_stanza
 from beast.scripts.conversion import convert as conv
 from beast.scripts.torchworks import train_prob_net
 from beast.scripts.tagging import tag_any
-from beast.Classla.TrainClassla import train_stanza
+# from Classla.TrainClassla import train_stanza
 from beast.SpacyTagger.spacyworks import train_spacy
 from beast.SpacyTagger.spacyworks import gettagmap
 from beast.TreeTagger.treetagger import train_treetagger
@@ -19,10 +19,10 @@ spacy_traindir = "/train.spacy"
 spacy_devdir = "/dev.spacy"
 spacyR_traindir = "/trainR.spacy"
 spacyR_devdir = "/devR.spacy"
-stanza_traindir = "/train.stanza"
-stanza_devdir = "/dev.stanza"
-stanzaR_traindir = "/trainR.stanza"
-stanzaR_devdir = "/devR.stanza"
+# stanza_traindir = "/train.stanza"
+# stanza_devdir = "/dev.stanza"
+# stanzaR_traindir = "/trainR.stanza"
+# stanzaR_devdir = "/devR.stanza"
 
 tempfiles = ([])
 tempdirs = ([])
@@ -43,7 +43,7 @@ parameters = ['-cl ' + str(cl),
 
 
 def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, ratio=0.9, lexiconmagic=True,
-                  transliterate=True, bidir=True, treetagger=False, spacytagger=False, stanzatagger=True, spacygpu=1):
+                  transliterate=True, bidir=True, treetagger=True, spacytagger=True, stanzatagger=False, spacygpu=1):
 
     global tempfiles
     global tempdirs
@@ -129,10 +129,10 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
             tempfiles.append(out_path + spacy_traindir)
             tempfiles.append(out_path + spacy_devdir)
 
-        if stanzatagger:
-            prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
-            tempfiles.append(out_path + stanza_traindir)
-            tempfiles.append(out_path + stanza_devdir)
+        # if stanzatagger:
+        #     prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
+        #     tempfiles.append(out_path + stanza_traindir)
+        #     tempfiles.append(out_path + stanza_devdir)
 
         if bidir:
             rconlulines = rlines.copy()
@@ -144,10 +144,8 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
                 tempfiles.append(out_path + spacyR_traindir)
                 tempfiles.append(out_path + spacyR_devdir)
 
-            if stanzatagger:
-                prepare_stanza(rconlulines, tempdirs, out_path + stanzaR_traindir, out_path + stanzaR_devdir)
-                tempfiles.append(out_path + stanzaR_traindir)
-                tempfiles.append(out_path + stanzaR_devdir)
+            # if stanzatagger:
+            #    prepare_stanza(conlulines, tempdirs, out_path + stanzaR_traindir, out_path + stanzaR_devdir)
 
     # create output dirs on the disk
     if not os.path.isdir(newdir):
@@ -187,17 +185,16 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
             train_spacy(cfgpath, trainpath, devpath, spacy_outpath, spacy_destdir)
 
-    if stanzatagger:
-        print("training Stanza tagger")
-        destdir = newdir + '/Stanza' + name
-        if not os.path.isdir(destdir):
-            os.mkdir(destdir)
-        if not os.path.isdir(out_path + '/StanzaTemp'):
-            os.mkdir(out_path + '/StanzaTemp')
+    # if stanzatagger:
+        # print("training Stanza tagger")
+        # destdir = newdir + '/Stanza' + name
+        # if not os.path.isdir(destdir):
+        #     os.mkdir(destdir)
+        # if not os.path.isdir(out_path + '/StanzaTemp'):
+        #     os.mkdir(out_path + '/StanzaTemp')
 
-        pt = path.dirname(__file__) + "/../Classla/standard.pt"
-        train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, out_path+'/StanzaTemp', pt)
-        tempdirs.append(out_path + '/StanzaTemp')
+        # train_stanza("", out_path + stanza_traindir, out_path + stanza_devdir, out_path+'/StanzaTemp', "")
+        # tempdirs.append(out_path + '/StanzaTemp')
         # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
 
 
