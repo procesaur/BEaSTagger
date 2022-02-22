@@ -46,7 +46,7 @@ def parse_args(args=None):
     parser.add_argument('--lr', type=float, default=3e-3, help='Learning rate')
     parser.add_argument('--beta2', type=float, default=0.95)
 
-    parser.add_argument('--max_steps', type=int, default=100)
+    parser.add_argument('--max_steps', type=int, default=50000)
     parser.add_argument('--eval_interval', type=int, default=100)
     parser.add_argument('--fix_eval_interval', dest='adapt_eval_interval', action='store_false', \
             help="Use fixed evaluation interval for all treebanks, otherwise by default the interval will be increased for larger treebanks.")
