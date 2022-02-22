@@ -46,7 +46,7 @@ parameters = ['-cl ' + str(cl),
 
 
 def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, ratio=0.9, lexiconmagic=True,
-                  transliterate=True, bidir=True, treetagger=True, spacytagger=True, stanzatagger=True, spacygpu=1):
+                  transliterate=True, bidir=True, treetagger=False, spacytagger=False, stanzatagger=True, spacygpu=1):
 
     global tempfiles
     global tempdirs
@@ -193,7 +193,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
     if stanzatagger:
         print("training Stanza tagger")
         pt = path.dirname(__file__) + "/../StanzaTagger/standard.pt"
-        if not os.path.isfile(pt):
+        if not os.path.isdir(pt):
             pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
                                     filetypes=(("tagged files", "*.pt"),("all files", "*.*")))
 
@@ -201,13 +201,14 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
         stanza_outpath = out_path + "/stanzaTemp"
         train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, stanza_outpath, pt)
         tempdirs.append(stanza_outpath)
-        copy_tree(stanza_outpath, stanza_destdir)
+        copy_tree(stanza_outpath + '/model-best', stanza_destdir)
 
         if bidir:
             stanza_destdir = newdir + '/StanzaR' + name
             stanza_outpath = out_path + "/stanzaRTemp"
             train_stanza(out_path + stanzaR_traindir, out_path + stanzaR_devdir, stanza_outpath, pt)
-            copy_tree(stanza_outpath, stanza_destdir)
+            tempdirs.append(stanza_outpath)
+            copy_tree(stanza_outpath + '/model-best', stanza_destdir)
 
 
 def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=0.001,
@@ -225,7 +226,7 @@ def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=
             taggers_array = ([])
 
             for t in taggers_arr:
-                if '.par' in t or 'Spacy' in t or 'Stanza' in t:
+                if '.par' in t or 'Spacy' in t or t.endswith('sr'):
                     taggers_array.append(path + '/' + t)
 
         if not transfer_learn:
