@@ -10,7 +10,7 @@ __pycache__/
 
 !*.pt
 
-!beast/StanzaTagger/*
+!beast/Classla/*
 
 # C extensions
 *.so

@@ -1,12 +1,12 @@
 import torch
-from stanza.models.common import doc
-from stanza.models.pos.trainer import unpack_batch
-from stanza.models.common.utils import unsort
-from stanza.models.pos.data import DataLoader
+from classla.models.common import doc
+from classla.models.pos.trainer import unpack_batch
+from classla.models.common.utils import unsort
+from classla.models.pos.data import DataLoader
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pack_sequence, PackedSequence
 import torch.nn.functional as F
-from stanza.models.common.vocab import CompositeVocab
-from stanza.models.common import utils, loss
+from classla.models.common.vocab import CompositeVocab
+from classla.models.common import utils, loss
 from torch import nn
 
 

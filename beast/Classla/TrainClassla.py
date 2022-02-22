@@ -1,19 +1,21 @@
+import os
 import argparse
-from stanza.models.tagger import train
-from stanza.models.common import utils
+from classla.models.tagger import train
+from classla.models.common import utils
 import torch
 
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default='data/pos', help='Root dir for saving models.')
-    parser.add_argument('--wordvec_dir', type=str, default='extern_data/wordvec', help='Directory of word vectors.')
+    parser.add_argument('--wordvec_dir', type=str, default='extern_data/word2vec', help='Directory of word vectors.')
     parser.add_argument('--wordvec_file', type=str, default=None, help='Word vectors filename.')
-    parser.add_argument('--wordvec_pretrain_file', type=str, default=None, help='Exact name of the pretrain file to read')
     parser.add_argument('--train_file', type=str, default=None, help='Input file for data loader.')
     parser.add_argument('--eval_file', type=str, default=None, help='Input file for data loader.')
     parser.add_argument('--output_file', type=str, default=None, help='Output CoNLL-U file.')
     parser.add_argument('--gold_file', type=str, default=None, help='Output CoNLL-U file.')
+    parser.add_argument('--pretrain_file', type=str, default=None, help='Input file containing pretrained data.')
+    parser.add_argument('--constrain_via_lexicon', type=str, default=None, help="Input location of lemmatization model.")
 
     parser.add_argument('--mode', default='train', choices=['train', 'predict'])
     parser.add_argument('--lang', type=str, help='Language')
@@ -44,11 +46,11 @@ def parse_args(args=None):
     parser.add_argument('--lr', type=float, default=3e-3, help='Learning rate')
     parser.add_argument('--beta2', type=float, default=0.95)
 
-    parser.add_argument('--max_steps', type=int, default=50000)
+    parser.add_argument('--max_steps', type=int, default=100)
     parser.add_argument('--eval_interval', type=int, default=100)
     parser.add_argument('--fix_eval_interval', dest='adapt_eval_interval', action='store_false', \
             help="Use fixed evaluation interval for all treebanks, otherwise by default the interval will be increased for larger treebanks.")
-    parser.add_argument('--max_steps_before_stop', type=int, default=3000, help='Changes learning method or early terminates after this many steps if the dev scores are not improving')
+    parser.add_argument('--max_steps_before_stop', type=int, default=3000)
     parser.add_argument('--batch_size', type=int, default=5000)
     parser.add_argument('--max_grad_norm', type=float, default=1.0, help='Gradient clipping.')
     parser.add_argument('--log_step', type=int, default=20, help='Print log every k steps.')
@@ -58,9 +60,7 @@ def parse_args(args=None):
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available())
     parser.add_argument('--cpu', action='store_true', help='Ignore CUDA.')
-
-    parser.add_argument('--augment_nopunct', type=float, default=None, help='Augment the training data by copying this fraction of punct-ending sentences as non-punct.  Default of None will aim for roughly 10%')
-
+    parser.add_argument('--lemma_pretag', type=bool, default=False)
     args = parser.parse_args(args=args)
     return args
 
@@ -77,7 +77,7 @@ def train_stanza(train_file, dev_in_file, out, pretrain=None):
                   "--batch_size", batch_size,
                   "--lang", "sr",
                   "--shorthand", "sr_set",
-                  "--wordvec_pretrain_file", pretrain,
+                  "--pretrain_file", pretrain,
                   "--mode", "train"]
     train_args = train_args #+ ["--no_pretrain"]
 

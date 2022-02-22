@@ -10,7 +10,7 @@ from beast.scripts.pipeline import prepare_stanza
 from beast.scripts.conversion import convert as conv
 from beast.scripts.torchworks import train_prob_net
 from beast.scripts.tagging import tag_any
-from beast.StanzaTagger.train_stanza import train_stanza
+from beast.Classla.TrainClassla import train_stanza
 from beast.SpacyTagger.spacyworks import train_spacy
 from beast.SpacyTagger.spacyworks import gettagmap
 from beast.TreeTagger.treetagger import train_treetagger
@@ -190,10 +190,10 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
     if stanzatagger:
         print("training Stanza tagger")
-        pt = path.dirname(__file__) + "/../StanzaTagger/standard.ptc"
+        pt = path.dirname(__file__) + "/../Classla/standard.ptc"
 
         stanza_destdir = newdir + '/Stanza' + name
-        stanza_outpath = out_path + "/stanzaTemp"
+        stanza_outpath = Path(out_path + "/stanzaTemp")
         train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, stanza_outpath, pt)
         tempdirs.append(stanza_outpath)
         copy_tree(stanza_outpath + '/model-best', stanza_destdir)
