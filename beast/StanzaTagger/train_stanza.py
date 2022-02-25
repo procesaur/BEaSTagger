@@ -65,7 +65,7 @@ def parse_args(args=None):
     return args
 
 
-def train_stanza(train_file, dev_in_file, out, pretrain=None):
+def train_stanza(train_file, dev_in_file, out, shorthand, pretrain=None):
     batch_size = "64"
     max_steps = "30"
 
@@ -80,7 +80,7 @@ def train_stanza(train_file, dev_in_file, out, pretrain=None):
                   "--batch_size", batch_size,
                   "--max_steps", max_steps,
                   "--lang", "sr",
-                  "--shorthand", "sr_set",
+                  "--shorthand", shorthand,
                   "--wordvec_pretrain_file", pretrain,
                   "--mode", "train"]
     train_args = train_args #+ ["--no_pretrain"]

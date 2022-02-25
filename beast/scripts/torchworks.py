@@ -134,7 +134,7 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
 
     for i in range(30):
         try:
-            X_trainval, X_test, y_trainval, y_test = train_test_split(input, output, test_size=0.01)
+            X_trainval, X_test, y_trainval, y_test = train_test_split(input, output, test_size=0.1)
 
             X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=val_size,
                                                               stratify=y_trainval)

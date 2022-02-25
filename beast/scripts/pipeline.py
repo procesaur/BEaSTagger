@@ -244,7 +244,7 @@ def rem_xml(lines):
     return newlines, origlines, exclusion
 
 
-def write_chunks(lines, out_path, chunklines=80000, testing=False, results=None):
+def write_chunks(lines, out_path, chunklines=500000, testing=False, results=None):
     targets = ([])
     if len(lines) < chunklines or testing:
         with open(out_path + '/tempx2', 'w', encoding='utf-8') as temp:
@@ -290,7 +290,7 @@ def get_taggers(path):
 
     par_file = ""
     for t in taggers_arr:
-        if '.par' in t or 'Spacy' in t:
+        if '.par' in t or 'spacy' in t or 'stanza' in t:
             taggers_array.append(t)
         if '.par' in t and par_file == "":
             par_file = t

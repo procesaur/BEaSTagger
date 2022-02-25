@@ -324,7 +324,7 @@ def tag_any(file, par_path, out_path, tt_path):
         if file_extension == '.par':
             tag_treetagger(par_path, fx, out_path + '/temp3', True, False, tt_path)
 
-        elif 'Stanza' in par_path:
+        elif 'stanza' in par_path:
         # elif par_path.endswith("/sr"):
             tag_stanza(par_path, fx, out_path + '/temp3', True, False, False)
 

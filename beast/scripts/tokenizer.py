@@ -14,6 +14,7 @@ if sys.platform != 'win32':
 reldir = os.path.dirname(os.path.abspath(__file__))
 xml = r'</?[šđžćč\-_\w]+( [šđžćč\-_\w]+=["\'].*["\'])*/?>'
 
+
 def read_abbrevs(file):
     abbrevs = {'B': [], 'N': [], 'S': []}
     for line in open(os.path.join(reldir, file), encoding='utf8'):
@@ -79,31 +80,6 @@ def tokenize(tokenizer, paragraph):
             tokenizer.finditer(paragraph.strip())]  # spaces_re.sub(' ',paragraph.strip()))]
 
 
-def sentence_split_nonstd(tokens, lang):
-    boundaries = [0]
-    for index in range(len(tokens) - 1):
-        token = tokens[index][0]
-        if token[0] in '.!?…':  # if sentence ending punctuation
-            boundaries.append(index + 1)
-        elif token.endswith('.'):  # if abbreviation
-            if token.lower() not in abbrevs[lang]['N']:  # if not in non-splitting abbreviationx
-                if token.lower() in abbrevs[lang]['S']:  # if in splitting abbreviationx
-                    boundaries.append(index + 1)
-                elif len(token) > 2:
-                    if tokens[index + 1][0][0].isupper():  # else if next is uppercase
-                        boundaries.append(index + 1)
-                        continue
-                    if index + 2 < len(tokens):  # else if next is space and nextnext is uppercase
-                        if tokens[index + 1][0][0].isspace() and tokens[index + 2][0][0].isupper():
-                            # tokens[index+1][0][0] not in u'.!?…':
-                            boundaries.append(index + 1)
-    boundaries.append(len(tokens))
-    sents = []
-    for index in range(len(boundaries) - 1):
-        sents.append(tokens[boundaries[index]:boundaries[index + 1]])
-    return sents
-
-
 def sentence_split(tokens, lang):
     boundaries = [0]
     for index in range(len(tokens) - 1):
@@ -141,8 +117,7 @@ def sentence_split(tokens, lang):
     return sents
 
 
-process = {'standard': lambda x, y, z: sentence_split(tokenize(x, y), z),
-           'nonstandard': lambda x, y, z: sentence_split_nonstd(tokenize(x, y), z)}
+process = {'standard': lambda x, y, z: sentence_split(tokenize(x, y), z)}
 
 
 def to_text(sent):
@@ -222,10 +197,8 @@ def rel_tokenize(text, out_path, lang='sr', document=False, nonstandard=False, c
                 sys.stdout.write(line)
                 continue
 
-        adds = represent_tomaz(process[mode](tokenizer, line, lang), par_id, conllu, bert, tagger)
         newtext += represent_tomaz(process[mode](tokenizer, line, lang), par_id, conllu, bert, tagger)
         if bert:
             newtext += '\n'
-
 
     return newtext.split('\n')

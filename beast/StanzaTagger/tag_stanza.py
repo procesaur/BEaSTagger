@@ -1,3 +1,4 @@
+import os
 import sys
 import pathlib
 import stanza
@@ -28,7 +29,9 @@ def tag_stanza(par_path, file_path, out_path, probability, lemmatize, tokenize):
         tokens.append(s.split("\n"))
 
     pt = par_path + "/../standard.pt"
-    nlp = stanza.Pipeline(par, dir=pardir, processors='tokenize,pos', tokenize_pretokenized=True, pos_model_path=par_path+"/standard.pt", pos_pretrain_path=pt)
+    parx = os.listdir(par_path)[0]
+    nlp = stanza.Pipeline(par, dir=pardir, processors='tokenize,pos', tokenize_pretokenized=True,
+                          pos_model_path=par_path + "/" + parx, pos_pretrain_path=pt, logging_level='FATAL')
 
     document = nlp(tokens)
     scores, preds, newdoc = getScores(nlp, document)
