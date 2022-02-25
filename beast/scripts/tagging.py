@@ -2,6 +2,7 @@ import os
 import numpy as np
 import re
 import pandas as pd
+import json
 
 from beast.scripts.conversion import convert as conv
 from beast.TreeTagger.treetagger import tag_treetagger
@@ -14,8 +15,8 @@ from beast.scripts.pipeline import probtagToMatrix, get_taggers, lemmas_dic, lex
 
 
 def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=False, transliterate=True,
-                tokenization=True, MWU=False, onlyPOS=False, lemmat=False, testing=False, quiet=True,
-                models=[], lemmatizers={}, lempos=False, probability=False, stdout=False, confidence=0.93):
+                tokenization=True, MWU=False, onlyPOS=False, lemmat=False, testing=False, quiet=True, models=[],
+                lemmatizers={}, lempos=False, probability=False, stdout=False, confidence=0.93):
 
     # default parameters
     tempfiles = ([])
@@ -54,6 +55,8 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
         # initialize file
         newtags = {}
         newprobs = {}
+        tagger_tags = {}
+        matricouts = []
 
         for model in models:
             newprobs[model] = ([])
@@ -112,8 +115,6 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
             tagsets = ([])
             lemmas = {}
 
-            tagger_tags = {}
-
             for tagger in taggers_array:
                 tlines = tag_any(tr, par_path + '/' + tagger, out_path, tt_path)
                 mat, accu, tagset, tags = probtagToMatrix(tlines, tagger.split('/')[-1])
@@ -121,11 +122,16 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                 tagaccus.append(accu)
                 tagsets.append(tagset)
 
-                tagger_tags[tagger.split('/')[-1]] = tags
+                tname = tagger.split('/')[-1]
+                if tname in tagger_tags:
+                    tagger_tags[tname].extend(tags)
+                else:
+                    tagger_tags[tname] = tags
 
             flat_tagset = [item for sublist in tagsets for item in sublist]
 
             matricout = np.concatenate(matrices, axis=0)
+            matricouts.append(matricout)
             csv = out_path + "/matrix-prob_tag.csv"
             with open(csv, 'w', encoding='utf-8') as m:
                 m.write('\t'.join(flat_tagset) + '\n')
@@ -283,7 +289,8 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
             if os.path.isfile(tempf):
                 os.remove(tempf)
 
-    return newtags, tagger_tags, newprobs, matricout.transpose(), flat_tagset
+    matricouts_all = np.concatenate(matricouts, axis=1)
+    return newtags, tagger_tags, newprobs, matricouts_all.transpose(), flat_tagset
 
 
 def tag_any(file, par_path, out_path, tt_path):

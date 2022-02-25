@@ -65,5 +65,3 @@ def tag_stanza(par_path, file_path, out_path, probability, lemmatize, tokenize):
             print(token.text + tokprob + lemma)
         #print('\n')
     sys.stdout = original
-
-#tag_classla(r"C:\Users\mihailo\classla_resources\sr", r"C:\Users\mihailo\desktop\New text document.txt",r"C:\Users\mihailo\desktop\new.txt",probability, lemmatize, tokenize)

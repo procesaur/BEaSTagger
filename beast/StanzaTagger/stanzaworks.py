@@ -19,7 +19,7 @@ def getScores(nlp, document):
     batch = DataLoader(
         #document, posproc.config['batch_size'], posproc.config, posproc.pretrain, vocab=posproc.vocab, evaluation=True,
         #sort_during_eval=True)
-        document, 1, posproc.config, posproc.pretrain, vocab=posproc.vocab, evaluation=True,
+        document, 64, posproc.config, posproc.pretrain, vocab=posproc.vocab, evaluation=True,
         sort_during_eval=True)
     scores = ([])
     thempreds = []
