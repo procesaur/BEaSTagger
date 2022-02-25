@@ -2,6 +2,7 @@ import sys
 import pathlib
 import stanza
 import re
+from os import path
 from beast.StanzaTagger.stanzaworks import getScores
 
 
@@ -21,25 +22,16 @@ def tag_stanza(par_path, file_path, out_path, probability, lemmatize, tokenize):
     text = re.sub(r'\n\n+', '\n\n', text).strip()
     par = pathlib.PurePath(par_path).name
     pardir = par_path.rstrip(par + '/')
+    sents = text.split("\n\n")
+    tokens = []
+    for s in sents:
+        tokens.append(s.split("\n"))
 
-    tokens = stanza.Pipeline(par, dir=pardir, processors='tokenize', logging_level="FATAL")
+    pt = par_path + "/../standard.pt"
+    nlp = stanza.Pipeline(par, dir=pardir, processors='tokenize,pos', tokenize_pretokenized=True, pos_model_path=par_path+"/standard.pt", pos_pretrain_path=pt)
 
-    if tokenize:
-        document = tokens.process(doc=text)
-    else:
-        tokens.processors["tokenize"].config["pretokenized"] = True
-        sents = text.split('\n\n')
-        for i, s in enumerate(sents):
-            sents[i] = s.split('\n')
-        document = tokens.process(doc=sents)
-
-    lem = ""
-    if lemmatize:
-        lem = ",lemma"
-
-    nlp = stanza.Pipeline(par, dir=pardir, processors='tokenize,pos'+lem, logging_level="FATAL")
-
-    scores, preds, newdoc = getScores(nlp, document, probability, lemmatize)
+    document = nlp(tokens)
+    scores, preds, newdoc = getScores(nlp, document)
 
     labels = nlp.processors["pos"].trainer.vocab['upos']
 

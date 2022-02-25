@@ -12,7 +12,7 @@ def package_files(package, directory):
 
 setup(
     name='BEaSTagger',
-    version='1.0.12',
+    version='1.1',
     packages=['beast'],
     install_requires=[
         'torch>=1.8.1',
@@ -23,7 +23,8 @@ setup(
         'sklearn>=0.0',
         'scikit-learn~=0.22.2.post1',
         'setuptools>=49.2.1',
-        'requests~=2.23.0'
+        'requests~=2.23.0',
+        'stanza~=1.3.0'
     ],
     package_data={'beast': package_files('beast', 'data\\default')},
     include_package_data=True,

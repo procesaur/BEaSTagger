@@ -153,4 +153,5 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.09, tune_ra
 
 
 if __name__ == "__main__":
-    train(pretrained=True, tunepaths={"UD": "tune_ud", "POS": "tune_pos"})
+    train(pretrained=True, tunepaths={"UD": "temp/tune_ud", "POS": "temp/tune_pos"})
+    #train(out_path="temp")

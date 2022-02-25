@@ -10,7 +10,7 @@ from stanza.models.common import utils, loss
 from torch import nn
 
 
-def getScores(nlp, document, probability, lemmatize):
+def getScores(nlp, document):
 
     posproc = nlp.processors["pos"]
     sm = nn.Softmax(dim=1)
@@ -26,7 +26,7 @@ def getScores(nlp, document, probability, lemmatize):
     score_seqs = []
 
     for i, b in enumerate(batch):
-        inputs, orig_idx, word_orig_idx, sentlens, wordlens, word_string = unpack_batch(b, trainer.use_cuda)
+        inputs, orig_idx, word_orig_idx, sentlens, wordlens = unpack_batch(b, trainer.use_cuda)
         word, word_mask, wordchars, wordchars_mask, upos, xpos, ufeats, pretrained = inputs
         trainer.model.eval()
         batch_size = word.size(0)
@@ -104,10 +104,7 @@ def getScores(nlp, document, probability, lemmatize):
         else:
             xpos_pred = clffunc(trainer.model.xpos_clf, xpos_hid)
             padded_xpos_pred = pad(xpos_pred)
-            if trainer.inflectional_lexicon is not None:
-                max_value = trainer.inflectional_lexicon.process(padded_xpos_pred, word_string)
-            else:
-                max_value = padded_xpos_pred.max(2)[1]
+            max_value = padded_xpos_pred.max(2)[1]
             loss += trainer.model.crit(xpos_pred.view(-1, xpos_pred.size(-1)), xpos.view(-1))
             preds.append(max_value)
 
@@ -121,10 +118,7 @@ def getScores(nlp, document, probability, lemmatize):
 
         upos_seqs = [trainer.vocab['upos'].unmap(sent) for sent in preds[0].tolist()]
 
-        if trainer.inflectional_lexicon is None:
-            xpos_seqs = [trainer.vocab['xpos'].unmap(sent) for sent in preds[1].tolist()]
-        else:
-            xpos_seqs = preds[1]
+        xpos_seqs = preds[1]
         feats_seqs = [trainer.vocab['feats'].unmap(sent) for sent in preds[2].tolist()]
 
         pred_tokens = [[[upos_seqs[i][j], xpos_seqs[i][j], feats_seqs[i][j]] for j in range(sentlens[i])] for i in
@@ -156,10 +150,6 @@ def getScores(nlp, document, probability, lemmatize):
 
     batch.doc.set([doc.UPOS, doc.XPOS, doc.FEATS], preds_flattened)
     newdoc = batch.doc
-
-    if lemmatize:
-        lemproc = nlp.processors["lemma"]
-        newdoc = lemproc.process(newdoc)
 
     return scores_flattened, preds_flattened, newdoc
 

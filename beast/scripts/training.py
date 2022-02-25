@@ -192,7 +192,8 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
     if stanzatagger:
         print("training Stanza tagger")
-        pt = path.dirname(__file__) + "/../StanzaTagger/standard.pt"
+
+        pt = path.dirname(__file__) + "/../StanzaTagger/set.pt"
         if not os.path.isfile(pt):
             pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
                                     filetypes=(("tagged files", "*.pt"),("all files", "*.*")))
