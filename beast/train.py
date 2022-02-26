@@ -39,7 +39,12 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
     :param batch_size: int > batch size for training stacked classifier
     :param learning_rate: float > learning_rate for training stacked classifier
     :param confidence: float > confidence line for beast tagger
-    :param transfer: bool > use transfer learning > defaults in false
+    :param transfer: bool > use transfer learning > defaults in False
+    :param bidir: bool > bidireectional training > default sin True
+    :param treetagger: bool > use TreeTagger for composition > defaults in True
+    :param spacytagger: bool > use spaCy for composition > defaults in True
+    :param stanzatagger: bool > use Stanza for composition > defaults in False
+    :param shorthand: string > Stanza langauge code > defaults in the one for Serbian
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
@@ -155,5 +160,3 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
 
 if __name__ == "__main__":
     train(out_path="temp", stanzatagger=True, testing=True)
-    #train(pretrained=True, tunepaths={"UD":"temp/tune_ud","POS": "temp/tune_pos"}, testing=True)
-    #train(onlytesting="temp/testing", out_path="temp")
