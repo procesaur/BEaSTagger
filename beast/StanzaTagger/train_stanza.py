@@ -45,13 +45,13 @@ def parse_args(args=None):
     parser.add_argument('--beta2', type=float, default=0.95)
 
     parser.add_argument('--max_steps', type=int, default=50000)
-    parser.add_argument('--eval_interval', type=int, default=100)
+    parser.add_argument('--eval_interval', type=int, default=500)
     parser.add_argument('--fix_eval_interval', dest='adapt_eval_interval', action='store_false', \
             help="Use fixed evaluation interval for all treebanks, otherwise by default the interval will be increased for larger treebanks.")
     parser.add_argument('--max_steps_before_stop', type=int, default=3000, help='Changes learning method or early terminates after this many steps if the dev scores are not improving')
     parser.add_argument('--batch_size', type=int, default=5000)
     parser.add_argument('--max_grad_norm', type=float, default=1.0, help='Gradient clipping.')
-    parser.add_argument('--log_step', type=int, default=20, help='Print log every k steps.')
+    parser.add_argument('--log_step', type=int, default=100, help='Print log every k steps.')
     parser.add_argument('--save_dir', type=str, default='saved_models/pos', help='Root dir for saving models.')
     parser.add_argument('--save_name', type=str, default=None, help="File name to save the model")
 
