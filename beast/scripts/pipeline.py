@@ -281,7 +281,7 @@ def get_taggers(path):
 
     par_file = ""
     for t in taggers_arr:
-        if '.par' in t or 'Spacy' in t:
+        if '.par' in t or 'spacy' in t or 'stanza' in t:
             taggers_array.append(t)
         if '.par' in t and par_file == "":
             par_file = t

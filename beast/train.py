@@ -7,10 +7,11 @@ from beast.scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def train(file_path="", out_path=".", pretrained=False, test_ratio=1, tune_ratio=0.9,
+def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
           lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
-          epochs=5, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False):
+          epochs=115, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
+          treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set"):
 
     """
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
@@ -38,7 +39,12 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=1, tune_ratio
     :param batch_size: int > batch size for training stacked classifier
     :param learning_rate: float > learning_rate for training stacked classifier
     :param confidence: float > confidence line for beast tagger
-    :param transfer: bool > use transfer learning > defaults in false
+    :param transfer: bool > use transfer learning > defaults in False
+    :param bidir: bool > bidireectional training > default sin True
+    :param treetagger: bool > use TreeTagger for composition > defaults in True
+    :param spacytagger: bool > use spaCy for composition > defaults in True
+    :param stanzatagger: bool > use Stanza for composition > defaults in False
+    :param shorthand: string > Stanza langauge code > defaults in the one for Serbian
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
@@ -64,7 +70,7 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=1, tune_ratio
                 # select files that will be used for training >>>
                 # training data (*format *WORD \t POS1 \t POS2 \t ... LEMMA\n )
                 file_path = fd.askopenfilename(initialdir="./data/training", title="Select tagged text files",
-                                               filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
+                                               filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm ."),
                                                           ("all files", "*.*")))
 
             # prepare necessities from the file
@@ -124,7 +130,7 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=1, tune_ratio
 
                 # train
                 train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset, beast_dir, tt_path,
-                              tune_ratio, lexiconmagic, transliterate)
+                              lexiconmagic, transliterate, tune_ratio, bidir, treetagger, spacytagger, stanzatagger, shorthand)
 
             for tagset in tagsets.keys():
                 train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size, learning_rate)
@@ -153,4 +159,4 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=1, tune_ratio
 
 
 if __name__ == "__main__":
-    train()
+    train(out_path="temp", stanzatagger=True, testing=True)

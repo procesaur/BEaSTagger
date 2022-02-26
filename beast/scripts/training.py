@@ -1,28 +1,36 @@
 import os
 import numpy as np
 from pathlib import Path
-from distutils.dir_util import remove_tree
 from os import path
+from distutils.dir_util import copy_tree, remove_tree
+from tkinter import Tk, filedialog as fd
+import json
+from shutil import copy2
 
-from beast.scripts.pipeline import prepare_spacy, lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
-# from scripts.pipeline import prepare_stanza
+from beast.scripts.pipeline import prepare_spacy, prepare_stanza, lexentries, makeconllu,\
+    ratio_split, write_chunks, lexmagic, probtagToMatrix
 from beast.scripts.conversion import convert as conv
 from beast.scripts.torchworks import train_prob_net
 from beast.scripts.tagging import tag_any
-# from Classla.TrainClassla import train_stanza
+from beast.StanzaTagger.train_stanza import train_stanza
 from beast.SpacyTagger.spacyworks import train_spacy
 from beast.SpacyTagger.spacyworks import gettagmap
 from beast.TreeTagger.treetagger import train_treetagger
 
 
+resources = {"tokenize": {},
+             "pos": {"standard": {"dependencies": [{"model": "pretrain", "package": "standard"}]}},
+             "pretrain": {"standard": {}}, "default_processors": {"tokenize": "standard", "pos": "standard"},
+             "default_dependencies": {"pos": [{"model": "pretrain", "package": "standard"}]}}
+
 spacy_traindir = "/train.spacy"
 spacy_devdir = "/dev.spacy"
 spacyR_traindir = "/trainR.spacy"
 spacyR_devdir = "/devR.spacy"
-# stanza_traindir = "/train.stanza"
-# stanza_devdir = "/dev.stanza"
-# stanzaR_traindir = "/trainR.stanza"
-# stanzaR_devdir = "/devR.stanza"
+stanza_traindir = "/train.stanza"
+stanza_devdir = "/dev.stanza"
+stanzaR_traindir = "/trainR.stanza"
+stanzaR_devdir = "/devR.stanza"
 
 tempfiles = ([])
 tempdirs = ([])
@@ -41,9 +49,11 @@ parameters = ['-cl ' + str(cl),
               '-lt 0.001',
               '-quiet']
 
+contversion_def = 'CYRtoLAT'
 
-def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, ratio=0.9, lexiconmagic=True,
-                  transliterate=True, bidir=True, treetagger=True, spacytagger=True, stanzatagger=False, spacygpu=1):
+
+def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lexiconmagic, transliterate, ratio,
+                  bidir, treetagger, spacytagger, stanzatagger, shorthand):
 
     global tempfiles
     global tempdirs
@@ -52,7 +62,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
     if transliterate:
         print('transliteration...')
         for i, line in enumerate(lines):
-            lines[i] = conv(line, 'CYRtoLAT')
+            lines[i] = conv(line, contversion_def)
 
     # This procedure changes the training dataset based of a lexicon
     if lexiconmagic:
@@ -129,10 +139,10 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
             tempfiles.append(out_path + spacy_traindir)
             tempfiles.append(out_path + spacy_devdir)
 
-        # if stanzatagger:
-        #     prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
-        #     tempfiles.append(out_path + stanza_traindir)
-        #     tempfiles.append(out_path + stanza_devdir)
+        if stanzatagger:
+            prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
+            tempfiles.append(out_path + stanza_traindir)
+            tempfiles.append(out_path + stanza_devdir)
 
         if bidir:
             rconlulines = rlines.copy()
@@ -144,8 +154,10 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
                 tempfiles.append(out_path + spacyR_traindir)
                 tempfiles.append(out_path + spacyR_devdir)
 
-            # if stanzatagger:
-            #    prepare_stanza(conlulines, tempdirs, out_path + stanzaR_traindir, out_path + stanzaR_devdir)
+            if stanzatagger:
+                prepare_stanza(rconlulines, tempdirs, out_path + stanzaR_traindir, out_path + stanzaR_devdir)
+                tempfiles.append(out_path + stanzaR_traindir)
+                tempfiles.append(out_path + stanzaR_devdir)
 
     # create output dirs on the disk
     if not os.path.isdir(newdir):
@@ -167,7 +179,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
     if spacytagger:
         print("training Spacy Tagger")
 
-        spacy_destdir = newdir + '/Spacy' + name
+        spacy_destdir = newdir + '/spacy' + name
         spacy_outpath = Path(out_path + "/spacyTemp")
         cfgpath = path.join(path.dirname(__file__), "../SpacyTagger/config.cfg")
         trainpath = out_path + spacy_traindir
@@ -177,7 +189,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
         train_spacy(cfgpath, trainpath, devpath, spacy_outpath, spacy_destdir)
 
         if bidir:
-            spacy_destdir = newdir + '/Spacy' + name + '_right'
+            spacy_destdir = newdir + '/spacy' + name + '_right'
             spacy_outpath = Path(out_path + "/spacyRTemp")
             trainpath = out_path + spacyR_traindir
             devpath = out_path + spacyR_devdir
@@ -185,17 +197,43 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, rat
 
             train_spacy(cfgpath, trainpath, devpath, spacy_outpath, spacy_destdir)
 
-    # if stanzatagger:
-        # print("training Stanza tagger")
-        # destdir = newdir + '/Stanza' + name
-        # if not os.path.isdir(destdir):
-        #     os.mkdir(destdir)
-        # if not os.path.isdir(out_path + '/StanzaTemp'):
-        #     os.mkdir(out_path + '/StanzaTemp')
+    if stanzatagger:
+        print("training Stanza tagger")
 
-        # train_stanza("", out_path + stanza_traindir, out_path + stanza_devdir, out_path+'/StanzaTemp', "")
-        # tempdirs.append(out_path + '/StanzaTemp')
-        # copy_tree(out_path + '/StanzaTemp/model-best', destdir)
+        pt = path.dirname(__file__) + "/../StanzaTagger/set.pt"
+
+        newjson = {}
+        if not os.path.isfile(pt):
+            pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
+                                    filetypes=(("tagged files", "*.pt"),("all files", "*.*")))
+
+        stanza_destdir = newdir + '/stanza' + name
+        newjson[os.path.basename(stanza_destdir)] = resources
+        stanza_outpath = out_path + "/stanzaTemp"
+        train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, stanza_outpath, shorthand, pt)
+        tempdirs.append(stanza_outpath)
+        copy_tree(stanza_outpath, stanza_destdir)
+
+        if bidir:
+            stanza_destdir = newdir + '/stanza' + name + '_right'
+            stanza_outpath = out_path + "/stanzaRTemp"
+            newjson[os.path.basename(stanza_destdir)] = resources
+            train_stanza(out_path + stanzaR_traindir, out_path + stanzaR_devdir, stanza_outpath, shorthand, pt)
+            tempdirs.append(stanza_outpath)
+            copy_tree(stanza_outpath, stanza_destdir)
+
+        respath = newdir + "/resources.json"
+        if os.path.isfile(respath):
+            with open(respath, "r", encoding="utf8") as jf1:
+                oldjson = json.load(jf1)
+            newjson.update(oldjson)
+
+        with open(respath, "w", encoding="utf8") as jf2:
+            json.dump(newjson, jf2)
+
+        ptpath = newdir + "/" + os.path.basename(pt)
+        if not os.path.isfile(ptpath):
+            copy2(pt, newdir+"/standard.pt")
 
 
 def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=0.001,
@@ -210,10 +248,10 @@ def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=
     if matrix == "":
         if taggers_array is None:
             taggers_arr = os.listdir(path)
-            taggers_array = ([])
+            taggers_array = []
 
             for t in taggers_arr:
-                if '.par' in t or 'Spacy' in t or t.endswith('sr'):
+                if '.par' in t or 'spacy' in t or 'stanza' in t:
                     taggers_array.append(path + '/' + t)
 
         if not transfer_learn:

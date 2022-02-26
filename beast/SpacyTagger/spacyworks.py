@@ -93,6 +93,7 @@ def tag_spacytagger(par_path, file_path, out_path, probability, lemmat, tokenize
 
         sys.stdout = original
 
+
 def gettagmap(uniqpos):
     tagdic = {}
     for p in uniqpos:
