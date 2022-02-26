@@ -134,21 +134,17 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
 
     for i in range(30):
         try:
-            X_trainval, X_test, y_trainval, y_test = train_test_split(input, output, test_size=0.1)
+            X_train, X_val, y_train, y_val = train_test_split(input, output, test_size=val_size, stratify=output)
 
-            X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=val_size,
-                                                              stratify=y_trainval)
             break
         except ValueError as e:
             print(str(e) + " ...trying again")
 
     X_train, y_train = np.array(X_train), np.array(y_train)
     X_val, y_val = np.array(X_val), np.array(y_val)
-    X_test, y_test = np.array(X_test), np.array(y_test)
 
     train_dataset = ClassifierDatasetx(torch.tensor(X_train).float(), torch.from_numpy(y_train).long())
     val_dataset = ClassifierDatasetx(torch.from_numpy(X_val).float(), torch.from_numpy(y_val).long())
-    test_dataset = ClassifierDatasetx(torch.from_numpy(X_test).float(), torch.from_numpy(y_test).long())
 
     target_list = []
     for _, t in train_dataset:
@@ -191,7 +187,6 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
                               sampler=weighted_sampler
                               )
     val_loader = DataLoader(dataset=val_dataset, batch_size=1)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=1)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -312,16 +307,3 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
     with open(out_path + '.col', 'w', encoding="utf-8") as fp:
         json.dump(colnames, fp)
 
-    y_pred_list = []
-
-    with torch.no_grad():
-        model.eval()
-        for X_batch, _ in test_loader:
-            X_batch = X_batch.to(device)
-            y_test_pred = model(X_batch)
-            y_pred_softmax = torch.log_softmax(y_test_pred, dim=1)
-            _, y_pred_tags = torch.max(y_pred_softmax, dim=1)
-            y_pred_list.append(y_pred_tags.cpu().numpy())
-
-    y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
-    print(classification_report(y_test, y_pred_list, zero_division=1))
