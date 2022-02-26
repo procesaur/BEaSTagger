@@ -34,21 +34,26 @@ def prepare_spacy(conlulines, tempdirs, traindir, devdir):
 
 
 def prepare_stanza(conlulines, tempdirs, traindir, devdir):
-    conlulines = [string for string in conlulines if string != "\n"]
+    conlulines = [string for string in conlulines] # if string != "\n"
     chunksize = len(conlulines) * 0.9
     train_stanza = ([])
     dev_stanza = ([])
+    devs=False
     for i, doc in enumerate(conlulines):
         if i < chunksize:
             train_stanza.append(doc)
-        else:
+        elif doc.split("\t")[0] == "1" or devs == True:
+            devs = True
             dev_stanza.append(doc)
+        else:
+            train_stanza.append(doc)
+
 
     with open(traindir, 'w', encoding='utf8') as f:
         f.write('\n'.join(train_stanza))
 
     with open(devdir, 'w', encoding='utf8') as f:
-        f.write('\n'.join(dev_stanza))
+        f.write('\n'.join(dev_stanza)+"\n\n")
 
     tempdirs.append(traindir)
     tempdirs.append(devdir)
@@ -60,11 +65,12 @@ def makeconllu(lst, tagmap):
     # word ord number, word, lemma, ud tag, tag, and several empty values that arent necessary
     idx = 1
     for i, line in enumerate(lst):
-
         if line == "":
             idx = 1
             lst[i] = lst[i] + '\n'
+
         else:
+
             la = line.split('\t')
             word = la[0]
             # word = word.replace('"', '||||').replace("'", "|||")
@@ -74,8 +80,13 @@ def makeconllu(lst, tagmap):
             else:
                 lemma = ""
             # lemma = lemma.replace('"', '||||').replace("'", "|||")
-            lst[i] = str(idx) + '\t' + word + '\t' + lemma + '\t' + tagmap[pos] + '\t' + pos + '\t_\t_\t_\t_\t_'
+            if idx > 1:
+                head = "1"
+            else:
+                head = "0"
+            lst[i] = str(idx) + '\t' + word + '\t' + lemma + '\t' + tagmap[pos] + '\t' + pos + '\t_\t' + head + '\t_\t_\t_'
             idx += 1
+
     return lst
 
 

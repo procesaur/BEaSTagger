@@ -269,6 +269,8 @@ def train_super(path, trainfile, tt_path, name="default", epochs=100, bs=32, lr=
         tag_freq = {i: tags.count(i) / len(tags) for i in set(tags)}
 
         targets = write_chunks(words, path)
+        for t in targets:
+            tempfiles.append(path + "/" + t)
 
         for tagger in taggers_array:
             tlines = ([])
