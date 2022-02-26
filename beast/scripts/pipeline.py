@@ -80,8 +80,10 @@ def makeconllu(lst, tagmap):
             else:
                 lemma = ""
             # lemma = lemma.replace('"', '||||').replace("'", "|||")
-            head = str(0)
-            head = str(idx-1)
+            if idx > 1:
+                head = "1"
+            else:
+                head = "0"
             lst[i] = str(idx) + '\t' + word + '\t' + lemma + '\t' + tagmap[pos] + '\t' + pos + '\t_\t' + head + '\t_\t_\t_'
             idx += 1
 
