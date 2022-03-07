@@ -3,6 +3,7 @@ from beast.scripts.tagging import tag_complex
 from beast.scripts.pipeline import lexentries, training_prep, lexmagic
 from beast.scripts.conversion import convert as conv
 
+import os
 import pandas as pd
 
 
@@ -49,12 +50,13 @@ def complex_test(tagger="", file="", lexiconmagic=True, transliterate=True, full
 
     for tagset in tagsets:
         modelname = tagset + ".pt"
+        if os.path.isfile(tagger+"/"+modelname):
 
-        newtags, tagger_tags, probs, matrix, flat = tag_complex(tagger, "", [out_path + "/temp_test"], out_path,
-                                                                tt_path, False, False, False, False, False, False, True,
-                                                                False, [modelname], {}, False, False, False, confidence)
+            newtags, tagger_tags, probs, matrix, flat = tag_complex(tagger, "", [out_path + "/temp_test"], out_path,
+                                                                    tt_path, False, False, False, False, False, False, True,
+                                                                    False, [modelname], {}, False, False, False, confidence)
 
-        test_results(tags[tagset], newtags[modelname], tagger_tags, tagset, matrix, flat, full)
+            test_results(tags[tagset], newtags[modelname], tagger_tags, tagset, matrix, flat, full)
 
 
 def test_results(correct_tags, beast_tags, tagger_answers, tagset, matrix, flat_tagset, full=False, dump=""):

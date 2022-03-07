@@ -1,9 +1,7 @@
 import os
 import sys
-import pathlib
 import stanza
 import re
-from os import path
 from beast.StanzaTagger.stanzaworks import getScores
 
 
@@ -21,8 +19,8 @@ def tag_stanza(par_path, file_path, out_path, probability, lemmatize, tokenize):
         text = f.read().rstrip()
 
     text = re.sub(r'\n\n+', '\n\n', text).strip()
-    par = pathlib.PurePath(par_path).name
-    pardir = par_path.rstrip(par + '/')
+    par = os.path.basename(par_path)
+    pardir = os.path.dirname(par_path)
     sents = text.split("\n\n")
     tokens = []
     for s in sents:

@@ -7,10 +7,10 @@ from beast.scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
+def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_ratio=0.8,
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
           lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
-          epochs=115, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
+          epochs=105, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
           treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set"):
 
     """
@@ -21,7 +21,7 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
     :param pretrained: bool > do not train standalone taggers, use tunelist instead - defaults in False
     Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
     :param test_ratio: float > ratio of training testing cutoff - defaults in 1, no cutoff
-    :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.9, meaning 0.1 for tuning
+    :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.8, meaning 0.2 for tuning
     :param lexiconmagic: bool > do lexicon magic on training set? - default True
     :param transliterate: bool > transliterate training set? - default False
     :param lexicons_path: string > path to dir where lexicons are located - defaults to ./data/lexicon/
@@ -159,4 +159,6 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
 
 
 if __name__ == "__main__":
-    train(out_path="temp", stanzatagger=True, testing=True)
+    train(out_path="temp", stanzatagger=True, testing=True, spacytagger=False, bidir=False)
+    #train(out_path="temp", pretrained=True, tunepaths={"pos":"temp/tune_pos"}, testing=True)
+    #train(onlytesting="temp/testing", out_path="temp")

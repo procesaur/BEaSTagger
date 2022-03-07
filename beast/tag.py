@@ -47,7 +47,7 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
 
     if not modelnames:
         for m in os.listdir(model):
-            if m.endswith(".pt"):
+            if m.endswith(".pt") and m!="standard.pt":
                 modelnames.append(m)
 
     if not lemmafor:

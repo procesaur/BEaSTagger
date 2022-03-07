@@ -7,7 +7,10 @@ from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pack_s
 import torch.nn.functional as F
 from stanza.models.common.vocab import CompositeVocab
 from stanza.models.common import utils, loss
+from stanza.utils.conll import CoNLL
 from torch import nn
+import stanza
+from os import path
 
 
 def getScores(nlp, document):
@@ -154,8 +157,71 @@ def getScores(nlp, document):
     return scores_flattened, preds_flattened, newdoc
 
 
+def stanza_split(list, ratio):
+    chunksize = len(list) * ratio
+    list1 = []
+    list2 = []
+    devs = False
+    for i, doc in enumerate(list):
+        if i < chunksize:
+            list1.append(doc)
+        elif doc.split("\t")[0] == "1" or devs:
+            devs = True
+            list2.append(doc)
+        else:
+            list1.append(doc)
+    return list1, list2
 
 
+def stanza_conl(conl):
+    conl2 = []
+    for c in conl:
+        d = c.split("\t")
+        if len(d) != 10:
+            conl2.append(c)
+        else:
+            try:
+                d = c.split("\t")
+                d[3], d[4] = d[4], d[3]
+                conl2.append("\t".join(d))
+            except:
+                print(c)
+    return conl2
+
+
+def prepare_stanza(conlulines, tempfiles, out, traindir, devdir, parser, pt):
+    traindir = out + traindir
+    devdir = out + devdir
+    contemp = out + "conll_temp"
+
+    with open(contemp, 'w', encoding='utf8') as f:
+        f.write('\n'.join(conlulines))
+    doc = CoNLL.conll2doc(contemp)
+    doc = depparse(doc, parser, pt)
+    conl = CoNLL.doc2conll_text(doc)
+    conlulines = conl.split("\n")
+    conlulines = stanza_conl(conlulines)
+
+    train_stanza, dev_stanza = stanza_split(conlulines, 0.9)
+
+    with open(traindir, 'w', encoding='utf8') as f:
+        f.write('\n'.join(train_stanza))
+
+    with open(devdir, 'w', encoding='utf8') as f:
+        f.write('\n'.join(dev_stanza)+"\n\n")
+
+    tempfiles.append(traindir)
+    tempfiles.append(devdir)
+    tempfiles.append(contemp)
+
+
+def depparse(doc, parser, pt):
+
+    nlp = stanza.Pipeline("sr", dir = "C:/Users/mihailo/classla_resources", processors='depparse',
+                          depparse_pretagged=True, logging_level='FATAL')
+
+    doc = nlp(doc)
+    return doc
 
 
 

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import re
 import pandas as pd
-import json
+
 
 from beast.scripts.conversion import convert as conv
 from beast.TreeTagger.treetagger import tag_treetagger
@@ -264,6 +264,8 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
             if probability:
                 xx += "\tprobability"
             header += xx
+
+        header += "\n"
 
         if not testing:
             if stdout:

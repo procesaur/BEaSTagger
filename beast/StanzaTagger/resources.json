@@ -1,0 +1,26 @@
+{
+  "stanza_beast": {
+    "depparse": {
+      "set": {
+        "dependencies": [
+          {
+            "model": "pretrain",
+            "package": "set"
+          }
+        ]
+      }
+    },
+    "default_processors": {
+      "depparse": "set"
+    },
+    "default_dependencies": {
+
+      "depparse": [
+        {
+          "model": "pretrain",
+          "package": "set"
+        }
+      ]
+    }
+  }
+}
