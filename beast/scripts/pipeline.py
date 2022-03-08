@@ -7,7 +7,7 @@ import numpy as np
 import requests
 
 
-def makeconllu(lst, tagmap):
+def makeconllu(lst, tagmap, stanzadp=False):
     # sentences sepparated by a double newline
     # extra carefull with quotes, as we will transform it into JSON
     # word ord number, word, lemma, ud tag, tag, and several empty values that arent necessary
@@ -36,9 +36,11 @@ def makeconllu(lst, tagmap):
                 head = "0"
                 root = "root"
                 hr = "0:root"
-            head = "_"
-            hr = "_"
-            root = "_"
+
+            if stanzadp:
+                head = "_"
+                root = "_"
+                hr = "_"
 
             lst[i] = str(idx) + '\t' + word + '\t' + lemma + '\t' + tagmap[pos] \
                      + '\t' + pos + '\t_\t' + head + '\t' + root + '\t' + hr + '\t_'
@@ -103,6 +105,20 @@ def segmentize(file="", erase_newlines=True):
     fulltext = re.sub(r'\n+', '\n', fulltext)
 
     return fulltext.split('\n'), len(fulltext), size
+
+
+def get_sen_toks(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        text = f.read().rstrip()
+
+    text = re.sub(r'\n\n+', '\n\n', text).strip()
+
+    sents = text.split("\n\n")
+    tokens = []
+    for s in sents:
+        tokens.append(s.split("\n"))
+
+    return tokens
 
 
 def lexentries(lex_path):

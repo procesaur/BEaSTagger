@@ -11,9 +11,10 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
           lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
           epochs=105, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
-          treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set"):
+          treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set", stanzadp=False):
 
     """
+
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
     header, with the first column being the word and the last lemma.
     Names for tagset in between will be fetched from header - default of NONE results in tkinter input
@@ -45,6 +46,7 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
     :param spacytagger: bool > use spaCy for composition > defaults in True
     :param stanzatagger: bool > use Stanza for composition > defaults in False
     :param shorthand: string > Stanza langauge code > defaults in the one for Serbian
+    :param stanzadp: bool > use dependency parsing for stanza training: defualts in False, requires pretrained file
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
@@ -129,8 +131,9 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
                                 xlines.append(parts[0] + "\t" + parts[c] + lem)
 
                 # train
-                train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset, beast_dir, tt_path,
-                              lexiconmagic, transliterate, tune_ratio, bidir, treetagger, spacytagger, stanzatagger, shorthand)
+                train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset,
+                              beast_dir, tt_path, lexiconmagic, transliterate, tune_ratio, bidir,
+                              treetagger, spacytagger, stanzatagger, shorthand, stanzadp)
 
             for tagset in tagsets.keys():
                 train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size, learning_rate)
@@ -159,6 +162,5 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
 
 
 if __name__ == "__main__":
-    train(out_path="temp", stanzatagger=True, testing=True, spacytagger=False, bidir=False)
-    #train(out_path="temp", pretrained=True, tunepaths={"pos":"temp/tune_pos"}, testing=True)
-    #train(onlytesting="temp/testing", out_path="temp")
+    train(out_path="temp", stanzatagger=True, testing=True, spacytagger=False, stanzadp=True, beast_dir="./data/models/dp")
+    train(out_path="temp", stanzatagger=True, testing=True, spacytagger=False, stanzadp=False, beast_dir="./data/models/np")

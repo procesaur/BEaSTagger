@@ -54,7 +54,7 @@ contversion_def = 'CYRtoLAT'
 
 
 def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lexiconmagic, transliterate, ratio,
-                  bidir, treetagger, spacytagger, stanzatagger, shorthand):
+                  bidir, treetagger, spacytagger, stanzatagger, shorthand, stanzadp):
 
     global tempfiles
     global tempdirs
@@ -131,7 +131,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
         tempfiles.append(out_path + '/SpacyTagger_tagmap')
 
         # transfer lines into conllu format that is usable.
-        conlulines = makeconllu(lines, tagmap)
+        conlulines = makeconllu(lines, tagmap, stanzadp)
 
         if spacytagger:
             prepare_spacy(conlulines, tempdirs, out_path + spacy_traindir, out_path + spacy_devdir)
@@ -144,10 +144,14 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
                 pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
                                         filetypes=(("tagged files", "*.pt"), ("all files", "*.*")))
 
-            dpt = path.dirname(__file__) + "/../StanzaTagger/dep.pt"
-            if not os.path.isfile(dpt):
-                dpt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained dependency parser",
-                                         filetypes=(("tagged files", "*.pt"), ("all files", "*.*")))
+            if stanzadp:
+                dpt = path.dirname(__file__) + "/../StanzaTagger/dep.pt"
+                if not os.path.isfile(dpt):
+                    dpt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained dependency parser",
+                                             filetypes=(("tagged files", "*.pt"), ("all files", "*.*")))
+
+            else:
+                dpt = ""
 
             prepare_stanza(conlulines, tempfiles, out_path, stanza_traindir, stanza_devdir, dpt, pt)
             tempfiles.append(out_path + stanza_traindir)
@@ -155,7 +159,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
 
         if bidir:
             # create conllu format
-            rconlulines = makeconllu(rlines, tagmap)
+            rconlulines = makeconllu(rlines, tagmap, stanzadp)
 
             if spacytagger:
                 prepare_spacy(rconlulines, tempdirs, out_path + spacyR_traindir, out_path + spacyR_devdir)
