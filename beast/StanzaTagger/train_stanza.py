@@ -66,7 +66,7 @@ def parse_args(args=None):
 
 
 def train_stanza(train_file, dev_in_file, out, gold_file, shorthand, pretrain=None):
-    batch_size = "64"
+    batch_size = "32"
     max_steps = "40000"
 
     train_args = ["--wordvec_dir", None,

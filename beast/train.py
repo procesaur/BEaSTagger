@@ -7,14 +7,13 @@ from beast.scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_ratio=0.8,
+def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_ratio=0.8,
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
           lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
           epochs=105, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
           treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set", stanzadp=False):
 
     """
-
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
     header, with the first column being the word and the last lemma.
     Names for tagset in between will be fetched from header - default of NONE results in tkinter input
@@ -162,5 +161,10 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
 
 
 if __name__ == "__main__":
-    train(out_path="temp", stanzatagger=True, testing=True, spacytagger=False, stanzadp=True, beast_dir="./data/models/dp")
-    train(out_path="temp", stanzatagger=True, testing=True, spacytagger=False, stanzadp=False, beast_dir="./data/models/np")
+    for i in range(0, 5):
+        train(out_path="temp", file_path="data/training/SrpKor4Tagging",
+              stanzatagger=True, testing=True, stanzadp=True, beast_dir="./data/models/dpx"+str(i))
+
+    train(out_path="temp", file_path="data/training/SrpKor4Tagging", transfer=True,
+          stanzatagger=True, testing=True, stanzadp=True, beast_dir="./data/models/tl")
+

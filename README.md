@@ -110,6 +110,7 @@ comeplete list of params:
     :param spacytagger: bool > use spaCy for composition > defaults in True
     :param stanzatagger: bool > use Stanza for composition > defaults in False
     :param shorthand: string > Stanza langauge code > defaults in the one for Serbian
+    :param stanzadp: bool > use dependency parsing for stanza training: defualts in False, requires pretrained file
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
 
 note>

@@ -49,6 +49,10 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
         # this returns a list of new files to tag and their map to the original files
         files, filesmap = big_chunkus(filex, out_path, quiet)
 
+    for x in filesmap:
+        if os.path.isfile(filesmap[x]):
+            print("Warning! " + filesmap[x] + " already exists. New contents will be appended to the existing file.")
+
     # pipeline for each file VVV
     for file in files:
 
