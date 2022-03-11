@@ -3,13 +3,15 @@ from spacy.tokens import Doc
 from spacy.training.loop import train as trainpos
 from spacy.training.initialize import init_nlp
 from spacy import util
+from spacy.training.converters.conllu_to_docs import conllu_to_docs
+from spacy.cli.convert import _write_docs_to_file
+from spacy.tokens._serialize import DocBin
 
 import os
 import sys
 from unicodedata import category
 from distutils.dir_util import copy_tree
-
-from spacy.pipeline.tagger import Tagger
+from pathlib import Path
 
 
 probability = True
@@ -19,6 +21,31 @@ tokenize = False
 chrs = (chr(i) for i in range(sys.maxunicode + 1))
 punctuation = set(c for c in chrs if category(c).startswith("P"))
 numbers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", ","}
+
+
+def prepare_spacy(conlulines, tempdirs, traindir, devdir):
+
+    conllufile = "\n".join(conlulines)
+    dox = [x for x in conllu_to_docs(conllufile, n_sents=10)]
+    chunksize = len(dox) * 0.9
+    spacy_train = ([])
+    spacy_dev = ([])
+    for i, doc in enumerate(dox):
+        if i < chunksize:
+            spacy_train.append(doc)
+        else:
+            spacy_dev.append(doc)
+
+    concatdocsToFile(spacy_train, Path(traindir))
+    concatdocsToFile(spacy_dev, Path(devdir))
+    tempdirs.append(traindir)
+    tempdirs.append(devdir)
+
+
+def concatdocsToFile (docs, outpath):
+    db = DocBin(docs=docs, store_user_data=True)
+    data = db.to_bytes()
+    _write_docs_to_file(data, outpath, "")
 
 
 def tag_spacytagger(par_path, file_path, out_path, probability, lemmat, tokenize, right = False):

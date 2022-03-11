@@ -2,12 +2,12 @@ import os
 import numpy as np
 import re
 import pandas as pd
-import json
+
 
 from beast.scripts.conversion import convert as conv
 from beast.TreeTagger.treetagger import tag_treetagger
 from beast.SpacyTagger.spacyworks import tag_spacytagger
-from beast.StanzaTagger.tag_stanza import tag_stanza
+from beast.StanzaTagger.stanzaworks import tag_stanza
 from beast.scripts.torchworks import test_prob_net
 from beast.scripts.pipeline import segmentize, big_chunkus, rem_xml, write_chunks, lexmagic
 from beast.scripts.tokenizer import rel_tokenize
@@ -48,6 +48,10 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
         # split files into smaller if they are over the terminal size.
         # this returns a list of new files to tag and their map to the original files
         files, filesmap = big_chunkus(filex, out_path, quiet)
+
+    for x in filesmap:
+        if os.path.isfile(filesmap[x]):
+            print("Warning! " + filesmap[x] + " already exists. New contents will be appended to the existing file.")
 
     # pipeline for each file VVV
     for file in files:
@@ -265,6 +269,8 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                 xx += "\tprobability"
             header += xx
 
+        header += "\n"
+
         if not testing:
             if stdout:
                 print(header)
@@ -332,8 +338,7 @@ def tag_any(file, par_path, out_path, tt_path):
             tag_treetagger(par_path, fx, out_path + '/temp3', True, False, tt_path)
 
         elif 'stanza' in par_path:
-        # elif par_path.endswith("/sr"):
-            tag_stanza(par_path, fx, out_path + '/temp3', True, False, False)
+            tag_stanza(par_path, fx, out_path + '/temp3')
 
         # if spacy tagger
         else:

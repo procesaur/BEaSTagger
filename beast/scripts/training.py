@@ -7,14 +7,13 @@ from tkinter import Tk, filedialog as fd
 import json
 from shutil import copy2
 
-from beast.scripts.pipeline import prepare_spacy, prepare_stanza, lexentries, makeconllu,\
-    ratio_split, write_chunks, lexmagic, probtagToMatrix
+from beast.scripts.pipeline import lexentries, makeconllu, ratio_split, write_chunks, lexmagic, probtagToMatrix
 from beast.scripts.conversion import convert as conv
 from beast.scripts.torchworks import train_prob_net
 from beast.scripts.tagging import tag_any
 from beast.StanzaTagger.train_stanza import train_stanza
-from beast.SpacyTagger.spacyworks import train_spacy
-from beast.SpacyTagger.spacyworks import gettagmap
+from beast.StanzaTagger.stanzaworks import prepare_stanza
+from beast.SpacyTagger.spacyworks import train_spacy, gettagmap, prepare_spacy
 from beast.TreeTagger.treetagger import train_treetagger
 
 
@@ -29,8 +28,10 @@ spacyR_traindir = "/trainR.spacy"
 spacyR_devdir = "/devR.spacy"
 stanza_traindir = "/train.stanza"
 stanza_devdir = "/dev.stanza"
+stanza_goldir = "/gold.stanza"
 stanzaR_traindir = "/trainR.stanza"
 stanzaR_devdir = "/devR.stanza"
+stanzaR_goldir = "/goldR.stanza"
 
 tempfiles = ([])
 tempdirs = ([])
@@ -53,7 +54,7 @@ contversion_def = 'CYRtoLAT'
 
 
 def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lexiconmagic, transliterate, ratio,
-                  bidir, treetagger, spacytagger, stanzatagger, shorthand):
+                  bidir, treetagger, spacytagger, stanzatagger, shorthand, stanzadp):
 
     global tempfiles
     global tempdirs
@@ -129,10 +130,8 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
 
         tempfiles.append(out_path + '/SpacyTagger_tagmap')
 
-        # copy the lines, as preporcessing is necessary again
-        conlulines = lines.copy()
-        # transfer into conllu format that is usable.
-        conlulines = makeconllu(conlulines, tagmap)
+        # transfer lines into conllu format that is usable.
+        conlulines = makeconllu(lines, tagmap, stanzadp)
 
         if spacytagger:
             prepare_spacy(conlulines, tempdirs, out_path + spacy_traindir, out_path + spacy_devdir)
@@ -140,14 +139,27 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
             tempfiles.append(out_path + spacy_devdir)
 
         if stanzatagger:
-            prepare_stanza(conlulines, tempdirs, out_path + stanza_traindir, out_path + stanza_devdir)
+            pt = path.dirname(__file__) + "/../StanzaTagger/set.pt"
+            if not os.path.isfile(pt):
+                pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
+                                        filetypes=(("tagged files", "*.pt"), ("all files", "*.*")))
+
+            if stanzadp:
+                dpt = path.dirname(__file__) + "/../StanzaTagger/dep.pt"
+                if not os.path.isfile(dpt):
+                    dpt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained dependency parser",
+                                             filetypes=(("tagged files", "*.pt"), ("all files", "*.*")))
+
+            else:
+                dpt = ""
+
+            prepare_stanza(conlulines, tempfiles, out_path, stanza_traindir, stanza_devdir, dpt, pt)
             tempfiles.append(out_path + stanza_traindir)
             tempfiles.append(out_path + stanza_devdir)
 
         if bidir:
-            rconlulines = rlines.copy()
             # create conllu format
-            rconlulines = makeconllu(rconlulines, tagmap)
+            rconlulines = makeconllu(rlines, tagmap, stanzadp)
 
             if spacytagger:
                 prepare_spacy(rconlulines, tempdirs, out_path + spacyR_traindir, out_path + spacyR_devdir)
@@ -155,7 +167,7 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
                 tempfiles.append(out_path + spacyR_devdir)
 
             if stanzatagger:
-                prepare_stanza(rconlulines, tempdirs, out_path + stanzaR_traindir, out_path + stanzaR_devdir)
+                prepare_stanza(rconlulines, tempfiles, out_path, stanzaR_traindir, stanzaR_devdir, dpt, pt)
                 tempfiles.append(out_path + stanzaR_traindir)
                 tempfiles.append(out_path + stanzaR_devdir)
 
@@ -199,18 +211,15 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
 
     if stanzatagger:
         print("training Stanza tagger")
-
-        pt = path.dirname(__file__) + "/../StanzaTagger/set.pt"
-
         newjson = {}
-        if not os.path.isfile(pt):
-            pt = fd.askopenfilename(initialdir="./data/training", title="Select pretrained vectors file",
-                                    filetypes=(("tagged files", "*.pt"),("all files", "*.*")))
-
         stanza_destdir = newdir + '/stanza' + name
         newjson[os.path.basename(stanza_destdir)] = resources
         stanza_outpath = out_path + "/stanzaTemp"
-        train_stanza(out_path + stanza_traindir, out_path + stanza_devdir, stanza_outpath, shorthand, pt)
+        train_stanza(out_path + stanza_traindir,
+                     out_path + stanza_devdir,
+                     stanza_outpath,
+                     out_path + stanza_goldir,
+                     shorthand, pt)
         tempdirs.append(stanza_outpath)
         copy_tree(stanza_outpath, stanza_destdir)
 
@@ -218,7 +227,11 @@ def train_taggers(lines, out_path, lex_path, oc_path, name, newdir, tt_path, lex
             stanza_destdir = newdir + '/stanza' + name + '_right'
             stanza_outpath = out_path + "/stanzaRTemp"
             newjson[os.path.basename(stanza_destdir)] = resources
-            train_stanza(out_path + stanzaR_traindir, out_path + stanzaR_devdir, stanza_outpath, shorthand, pt)
+            train_stanza(out_path + stanzaR_traindir,
+                         out_path + stanzaR_devdir,
+                         stanza_outpath,
+                         out_path + stanzaR_goldir,
+                         shorthand, pt)
             tempdirs.append(stanza_outpath)
             copy_tree(stanza_outpath, stanza_destdir)
 

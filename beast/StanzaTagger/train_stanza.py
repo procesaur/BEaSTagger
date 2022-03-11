@@ -45,13 +45,13 @@ def parse_args(args=None):
     parser.add_argument('--beta2', type=float, default=0.95)
 
     parser.add_argument('--max_steps', type=int, default=50000)
-    parser.add_argument('--eval_interval', type=int, default=1000)
+    parser.add_argument('--eval_interval', type=int, default=500)
     parser.add_argument('--fix_eval_interval', dest='adapt_eval_interval', action='store_false', \
             help="Use fixed evaluation interval for all treebanks, otherwise by default the interval will be increased for larger treebanks.")
     parser.add_argument('--max_steps_before_stop', type=int, default=3000, help='Changes learning method or early terminates after this many steps if the dev scores are not improving')
     parser.add_argument('--batch_size', type=int, default=5000)
     parser.add_argument('--max_grad_norm', type=float, default=1.0, help='Gradient clipping.')
-    parser.add_argument('--log_step', type=int, default=200, help='Print log every k steps.')
+    parser.add_argument('--log_step', type=int, default=500, help='Print log every k steps.')
     parser.add_argument('--save_dir', type=str, default='saved_models/pos', help='Root dir for saving models.')
     parser.add_argument('--save_name', type=str, default=None, help="File name to save the model")
 
@@ -65,9 +65,9 @@ def parse_args(args=None):
     return args
 
 
-def train_stanza(train_file, dev_in_file, out, shorthand, pretrain=None):
-    batch_size = "64"
-    max_steps = "10000"
+def train_stanza(train_file, dev_in_file, out, gold_file, shorthand, pretrain=None):
+    batch_size = "32"
+    max_steps = "40000"
 
     train_args = ["--wordvec_dir", None,
                   "--wordvec_file", pretrain,
@@ -83,7 +83,7 @@ def train_stanza(train_file, dev_in_file, out, shorthand, pretrain=None):
                   "--shorthand", shorthand,
                   "--wordvec_pretrain_file", pretrain,
                   "--mode", "train"]
-    train_args = train_args #+ ["--no_pretrain"]
+    train_args = train_args + ["--no_pretrain"]
 
     args = parse_args(train_args)
 

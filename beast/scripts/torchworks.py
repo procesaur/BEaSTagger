@@ -90,7 +90,7 @@ def test_prob_net(csv, par_path, out_path, modelname='net-prob.pt'):
     return tags, y_prob_list
 
 
-def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size=0.1):
+def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size=0.1, quiet=True):
 
     out_path = out + "/" + name
     dataset = pd.read_csv(csv, sep='\t')
@@ -279,8 +279,10 @@ def train_prob_net(csv, out, name, epochs=100, batch_size=32, lr=0.001, val_size
         tacc = train_epoch_acc / len(train_loader)
         vacc = val_epoch_acc / len(val_loader)
 
-        print(
-            f'Epoch {e + 0:03}: | Train Loss: {tloss:.5f} | Val Loss: {vloss:.5f} | Train Acc: {tacc:.3f}| Val Acc: {vacc:.3f}')
+        if not quiet:
+            print(f'Epoch {e + 0:03}: | Train Loss: {tloss:.5f} | Val Loss: {vloss:.5f}'
+                  f' | Train Acc: {tacc:.3f}| Val Acc: {vacc:.3f}')
+
         score = vacc
         lastbest = 0
         if best/score < 1.002 and tloss+vloss < 0.064 and tloss/vloss > 0.9:

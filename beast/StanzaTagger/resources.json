@@ -1,0 +1,31 @@
+{
+  "stanzadp": {
+
+    "depparse": {
+      "standard": {
+        "dependencies": [
+          {
+            "model": "pretrain",
+            "package": "standard"
+          }
+        ]
+      }
+    },
+    "pretrain": {
+      "standard": {
+      }
+    },
+    "default_processors": {
+      "depparse": "standard"
+    },
+    "default_dependencies": {
+
+      "depparse": [
+        {
+          "model": "pretrain",
+          "package": "standard"
+        }
+      ]
+    }
+  }
+}

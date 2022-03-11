@@ -4,62 +4,10 @@ import random
 import re
 import sys
 import numpy as np
-from pathlib import Path
 import requests
 
-from spacy.cli.convert import _write_docs_to_file
-from spacy.tokens._serialize import DocBin
-from spacy.training.converters.conllu_to_docs import conllu_to_docs
 
-from beast.scripts.tokenizer import rel_tokenize
-
-
-def prepare_spacy(conlulines, tempdirs, traindir, devdir):
-
-    conllufile = "\n".join(conlulines)
-    dox = [x for x in conllu_to_docs(conllufile, n_sents=10)]
-    chunksize = len(dox) * 0.9
-    spacy_train = ([])
-    spacy_dev = ([])
-    for i, doc in enumerate(dox):
-        if i < chunksize:
-            spacy_train.append(doc)
-        else:
-            spacy_dev.append(doc)
-
-    concatdocsToFile(spacy_train, Path(traindir))
-    concatdocsToFile(spacy_dev, Path(devdir))
-    tempdirs.append(traindir)
-    tempdirs.append(devdir)
-
-
-def prepare_stanza(conlulines, tempdirs, traindir, devdir):
-    conlulines = [string for string in conlulines] # if string != "\n"
-    chunksize = len(conlulines) * 0.9
-    train_stanza = ([])
-    dev_stanza = ([])
-    devs=False
-    for i, doc in enumerate(conlulines):
-        if i < chunksize:
-            train_stanza.append(doc)
-        elif doc.split("\t")[0] == "1" or devs == True:
-            devs = True
-            dev_stanza.append(doc)
-        else:
-            train_stanza.append(doc)
-
-
-    with open(traindir, 'w', encoding='utf8') as f:
-        f.write('\n'.join(train_stanza))
-
-    with open(devdir, 'w', encoding='utf8') as f:
-        f.write('\n'.join(dev_stanza)+"\n\n")
-
-    tempdirs.append(traindir)
-    tempdirs.append(devdir)
-
-
-def makeconllu(lst, tagmap):
+def makeconllu(lst, tagmap, stanzadp=False):
     # sentences sepparated by a double newline
     # extra carefull with quotes, as we will transform it into JSON
     # word ord number, word, lemma, ud tag, tag, and several empty values that arent necessary
@@ -81,19 +29,25 @@ def makeconllu(lst, tagmap):
                 lemma = ""
             # lemma = lemma.replace('"', '||||').replace("'", "|||")
             if idx > 1:
-                head = "1"
+                head = str(idx-1)
+                root = "dep"
+                hr = head + ":dep"
             else:
                 head = "0"
-            lst[i] = str(idx) + '\t' + word + '\t' + lemma + '\t' + tagmap[pos] + '\t' + pos + '\t_\t' + head + '\t_\t_\t_'
+                root = "root"
+                hr = "0:root"
+
+            if stanzadp:
+                head = "_"
+                root = "_"
+                hr = "_"
+
+            lst[i] = str(idx) + '\t' + word + '\t' + lemma + '\t' + tagmap[pos] \
+                     + '\t' + pos + '\t_\t' + head + '\t' + root + '\t' + hr + '\t_'
+
             idx += 1
 
     return lst
-
-
-def concatdocsToFile (docs, outpath):
-    db = DocBin(docs=docs, store_user_data=True)
-    data = db.to_bytes()
-    _write_docs_to_file(data, outpath, "")
 
 
 def chunkses(lst, n):
@@ -136,7 +90,6 @@ def segmentize(file="", erase_newlines=True):
         fulltext = file
         size = 1
 
-
     if erase_newlines:
         control = 12
     else:
@@ -152,6 +105,20 @@ def segmentize(file="", erase_newlines=True):
     fulltext = re.sub(r'\n+', '\n', fulltext)
 
     return fulltext.split('\n'), len(fulltext), size
+
+
+def get_sen_toks(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        text = f.read().rstrip()
+
+    text = re.sub(r'\n\n+', '\n\n', text).strip()
+
+    sents = text.split("\n\n")
+    tokens = []
+    for s in sents:
+        tokens.append(s.split("\n"))
+
+    return tokens
 
 
 def lexentries(lex_path):

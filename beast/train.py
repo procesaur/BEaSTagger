@@ -7,11 +7,11 @@ from beast.scripts.pipeline import training_prep, ratio_split
 from tkinter import Tk, filedialog as fd
 
 
-def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_ratio=0.9,
+def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_ratio=0.8,
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
           lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
-          epochs=115, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
-          treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set"):
+          epochs=101, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
+          treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set", stanzadp=False):
 
     """
     :param file_path: string > path to file (or url) that will be used for training. File must be in tsv form with a
@@ -19,9 +19,9 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
     Names for tagset in between will be fetched from header - default of NONE results in tkinter input
     :param out_path: string > path to dir where model dir will be created - defaults to current dir
     :param pretrained: bool > do not train standalone taggers, use tunelist instead - defaults in False
-    Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
+    Only use when there are already pre-trained and available in single directory, and tune sets are available.
     :param test_ratio: float > ratio of training testing cutoff - defaults in 1, no cutoff
-    :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.9, meaning 0.1 for tuning
+    :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.8, meaning 0.2 for tuning
     :param lexiconmagic: bool > do lexicon magic on training set? - default True
     :param transliterate: bool > transliterate training set? - default False
     :param lexicons_path: string > path to dir where lexicons are located - defaults to ./data/lexicon/
@@ -45,6 +45,7 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
     :param spacytagger: bool > use spaCy for composition > defaults in True
     :param stanzatagger: bool > use Stanza for composition > defaults in False
     :param shorthand: string > Stanza langauge code > defaults in the one for Serbian
+    :param stanzadp: bool > use dependency parsing for stanza training: defualts in False, requires pretrained file
     :return: this function outputs trained model onto said location - testing returns test results, otherwise no returns
     """
 
@@ -129,11 +130,13 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
                                 xlines.append(parts[0] + "\t" + parts[c] + lem)
 
                 # train
-                train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset, beast_dir, tt_path,
-                              lexiconmagic, transliterate, tune_ratio, bidir, treetagger, spacytagger, stanzatagger, shorthand)
+                train_taggers(xlines, out_path, lex_paths[tagset], oc_paths[tagset], "_" + tagset,
+                              beast_dir, tt_path, lexiconmagic, transliterate, tune_ratio, bidir,
+                              treetagger, spacytagger, stanzatagger, shorthand, stanzadp)
 
             for tagset in tagsets.keys():
-                train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size, learning_rate)
+                train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size,
+                            learning_rate, False, transfer)
 
         else:
             for tune in tunepaths:
@@ -144,8 +147,8 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
                                                          filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
                                                                     ("all files", "*.*")))
 
-                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate, transfer,
-                            False)
+                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate,
+                            False, transfer)
 
         if testing:
             print("testing")
@@ -159,4 +162,5 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.9, tune_rat
 
 
 if __name__ == "__main__":
-    train(out_path="temp", stanzatagger=True, testing=True)
+    train()
+
