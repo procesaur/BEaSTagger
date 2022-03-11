@@ -10,7 +10,7 @@ from tkinter import Tk, filedialog as fd
 def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_ratio=0.8,
           lexiconmagic=True, transliterate=False, lexicons_path="", beast_dir="",
           lex_paths={}, oc_paths={}, tunepaths={}, testing=False, onlytesting="", fulltest=False,
-          epochs=105, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
+          epochs=101, batch_size=32, learning_rate=0.001, confidence=0.92, transfer=False, bidir=True,
           treetagger=True, spacytagger=True, stanzatagger=False, shorthand="sr_set", stanzadp=False):
 
     """
@@ -19,7 +19,7 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_rat
     Names for tagset in between will be fetched from header - default of NONE results in tkinter input
     :param out_path: string > path to dir where model dir will be created - defaults to current dir
     :param pretrained: bool > do not train standalone taggers, use tunelist instead - defaults in False
-    Only use when they are alrady pre-trained and available in single directory, and tune sets are available.
+    Only use when there are already pre-trained and available in single directory, and tune sets are available.
     :param test_ratio: float > ratio of training testing cutoff - defaults in 1, no cutoff
     :param tune_ratio: float > ratio of training tuning cutoff - defaults in 0.8, meaning 0.2 for tuning
     :param lexiconmagic: bool > do lexicon magic on training set? - default True
@@ -135,7 +135,8 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_rat
                               treetagger, spacytagger, stanzatagger, shorthand, stanzadp)
 
             for tagset in tagsets.keys():
-                train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size, learning_rate)
+                train_super(beast_dir, out_path + "/tune_" + tagset, tt_path, tagset, epochs, batch_size,
+                            learning_rate, False, transfer)
 
         else:
             for tune in tunepaths:
@@ -146,8 +147,8 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_rat
                                                          filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"),
                                                                     ("all files", "*.*")))
 
-                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate, transfer,
-                            False)
+                train_super(beast_dir, tunepaths[tune], tt_path, tunename, epochs, batch_size, learning_rate,
+                            False, transfer)
 
         if testing:
             print("testing")
@@ -161,10 +162,5 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_rat
 
 
 if __name__ == "__main__":
-    for i in range(0, 5):
-        train(out_path="temp", file_path="data/training/SrpKor4Tagging",
-              stanzatagger=True, testing=True, stanzadp=True, beast_dir="./data/models/dpx"+str(i))
-
-    train(out_path="temp", file_path="data/training/SrpKor4Tagging", transfer=True,
-          stanzatagger=True, testing=True, stanzadp=True, beast_dir="./data/models/tl")
+    train()
 

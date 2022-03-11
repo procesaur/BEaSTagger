@@ -228,7 +228,7 @@ def prepare_stanza(conlulines, tempfiles, out, traindir, devdir, parser, pt):
         f.write('\n'.join(train_stanza))
 
     with open(devdir, 'w', encoding='utf8') as f:
-        f.write('\n'.join(dev_stanza)+"\n\n")
+        f.write('\n'.join(dev_stanza))
 
     tempfiles.append(traindir)
     tempfiles.append(devdir)
