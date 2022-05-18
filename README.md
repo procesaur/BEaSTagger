@@ -3,6 +3,8 @@
 This package provides POS-tagging using a system composed of [treetagger](https://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/), [spaCy](https://spacy.io/) and [Stanza](https://stanfordnlp.github.io/) (again, as of version 1.1).
 Package also provides training of a new system provided the necessary files.
 
+If you use this package or generated data, please cite: https://doi.org/10.3390/app12105028
+
 ## Installation
 ###### Google Collab
         !pip install git+https://github.com/procesaur/BEaSTagger.git
