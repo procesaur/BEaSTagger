@@ -42,8 +42,8 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
 
     if not src:
         Tk().withdraw()
-        src = fd.askopenfilenames(initialdir="./data/training", title="Select tagged text files",
-                                    filetypes=(("tagged files", "*.tt .tag .txt .vrt .vert .lm"), ("all files", "*.*")))
+        src = fd.askopenfilenames(initialdir="./data/training", title="Select files to be tagged",
+                                    filetypes=(("tagged files", "*.txt .xml"), ("all files", "*.*")))
 
     if not modelnames:
         for m in os.listdir(model):
@@ -74,4 +74,4 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
 
 
 if __name__ == "__main__":
-    tag()
+    tag(out_path="./temp", lemmafor=["UD"])
