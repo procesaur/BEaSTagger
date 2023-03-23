@@ -162,5 +162,5 @@ def train(file_path="", out_path=".", pretrained=False, test_ratio=0.8, tune_rat
 
 
 if __name__ == "__main__":
-    train()
+    train(onlytesting="")
 

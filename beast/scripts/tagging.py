@@ -2,7 +2,7 @@ import os
 import numpy as np
 import re
 import pandas as pd
-
+import json
 
 from beast.scripts.conversion import convert as conv
 from beast.TreeTagger.treetagger import tag_treetagger
@@ -173,6 +173,11 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                     for i, tag in enumerate(newtagsx):
                         if newprobsx[i] < confidence:
                             newtagsx[i] = tagger_answers["high"][i]
+
+                    tagger_answers["beast"] = newtagsx
+
+                    with open("temp/answers.json", "w", encoding="utf-8") as tat:
+                        json.dump(tagger_answers, tat, ensure_ascii=False)
 
                 newtags[model].extend(newtagsx)
                 newprobs[model].extend(newprobsx)

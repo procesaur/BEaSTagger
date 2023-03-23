@@ -103,6 +103,7 @@ def test_results(correct_tags, beast_tags, tagger_answers, tagset, matrix, flat_
     tagger_answers["jury"] = df.idxmax(axis=1).tolist()
     tagger_answers["BEaST"] = beast_tags
 
+
     if full:
         for a in tagger_answers:
             print(a)

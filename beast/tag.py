@@ -69,8 +69,11 @@ def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, 
                     lemmat, False, quiet, modelnames, lemmatizers, lempos, probability, stdout, confidence)
     else:
         for f in src:
-            tag_complex(model, lex_path, [f], out_path, tt_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS,
+            try:
+                tag_complex(model, lex_path, [f], out_path, tt_path, lexiconmagic, transliterate, tokenize, MWU, onlyPOS,
                         lemmat, False, quiet, modelnames, lemmatizers, lempos, probability, stdout, confidence)
+            except:
+                print(f)
 
 
 if __name__ == "__main__":
