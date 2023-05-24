@@ -23,7 +23,7 @@ setup(
         'sklearn>=0.0',
         'scikit-learn~=0.22.2.post1',
         'setuptools>=49.2.1',
-        'requests~=2.23.0',
+        'requests~>2.31.0',
         'stanza~=1.3.0'
     ],
     package_data={'beast': package_files('beast', 'data\\default')},
