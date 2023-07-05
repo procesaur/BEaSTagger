@@ -10,7 +10,7 @@ from beast.SpacyTagger.spacyworks import tag_spacytagger
 from beast.StanzaTagger.stanzaworks import tag_stanza
 from beast.scripts.torchworks import test_prob_net
 from beast.scripts.pipeline import segmentize, big_chunkus, rem_xml, write_chunks, lexmagic
-from beast.scripts.tokenizer import rel_tokenize
+from beast.scripts.tokenizer import sr_tokenize
 from beast.scripts.pipeline import probtagToMatrix, get_taggers, lemmas_dic, lexentries
 
 
@@ -70,9 +70,11 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
 
         # tokenization
         if tokenization:
+            origlines = []
             if not quiet:
                 print('tokenization...')
-            origlines = rel_tokenize(paragraphs, out_path)
+            for paragraph in paragraphs:
+                origlines.extend(sr_tokenize(paragraph))
         else:
             try:
                 with open(file, 'r', encoding='utf-8') as f:
@@ -225,20 +227,23 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                                 lemmas[model].append(word)
             # print(lemmas.keys())
             for i, l in enumerate(origlines):
-                taggedline = l
-                for model in models:
-                    if onlyPOS:
-                        taggedline += "\t" + newtags[model][i].split(':')[0]
-                    else:
-                        taggedline += "\t" + newtags[model][i]
-                        if model in lemmas.keys():
-                            taggedline += "\t" + lemmas[model][i]
-                            if lempos:
-                                taggedline += "\t" + lemmas[model][i] + "_" + newtags[model][i]
-                    if probability:
-                        taggedline += "\t" + str(round(newprobs[model][i], 3))
-                taggedline += "\n"
-                taggedlines.append(taggedline)
+                try:
+                    taggedline = l
+                    for model in models:
+                        if onlyPOS:
+                            taggedline += "\t" + newtags[model][i].split(':')[0]
+                        else:
+                            taggedline += "\t" + newtags[model][i]
+                            if model in lemmas.keys():
+                                taggedline += "\t" + lemmas[model][i]
+                                if lempos:
+                                    taggedline += "\t" + lemmas[model][i] + "_" + newtags[model][i]
+                        if probability:
+                            taggedline += "\t" + str(round(newprobs[model][i], 3))
+                    taggedline += "\n"
+                    taggedlines.append(taggedline)
+                except:
+                    print(l)
 
             tempfiles.append(out_path + "/temp.tag")
             tempfiles.append(out_path + "/temp2.tag")

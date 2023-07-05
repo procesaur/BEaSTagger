@@ -1,23 +1,14 @@
-import re
-import sys
-import os
+from re import compile, UNICODE, IGNORECASE, match
+from os import path
 
 
-if sys.platform == 'win32':
-    from signal import signal, SIG_DFL
-else:
-    from signal import signal, SIGPIPE, SIG_DFL
-
-if sys.platform != 'win32':
-    signal(SIGPIPE, SIG_DFL)
-
-reldir = os.path.dirname(os.path.abspath(__file__))
+dir = path.dirname(path.abspath(__file__))
 xml = r'</?[šđžćč\-_\w]+( [šđžćč\-_\w]+=["\'].*["\'])*/?>'
 
 
 def read_abbrevs(file):
     abbrevs = {'B': [], 'N': [], 'S': []}
-    for line in open(os.path.join(reldir, file), encoding='utf8'):
+    for line in open(path.join(dir, file), encoding='utf8'):
         if not line.startswith('#'):
             abbrev, type = line.strip().split('\t')[:2]
             abbrevs[type].append(abbrev)
@@ -54,9 +45,12 @@ langs = {
         'dot': r'[.!?/]{2,}',
         'space': r'\s+',
         'other': r'(.)\1*',
+        'additional': r'[0-9][G|D|XL]',
+        'period': r'[1-9][0-9]{0,2}0\-ih',
+        'initials': r'[A-ZŠĐŽĆČАБВГДЂЕЖЗИЈКЛЉМНЊОПР СТЋУФХЦЧЏШ]\.',
         'order': (
-        'abbrev', 'num', 'url', 'htmlesc', 'tag', 'mail', 'mention', 'hashtag', 'emoticon', 'word', 'arrow', 'dot',
-        'space', 'other')
+        'abbrev', 'period', 'num', 'url', 'htmlesc', 'tag', 'mail', 'initials','mention', 'hashtag', 'additional',
+        'emoticon', 'word', 'arrow', 'dot','space', 'other')
     },
 
 }
@@ -64,14 +58,13 @@ langs = {
 # transform abbreviation lists to sets for lookup during sentence splitting
 for lang in abbrevs:
     for type in abbrevs[lang]:
-        abbrevs[lang][type] = set([e.replace('\\.', '.') for e in abbrevs[lang][type]])
+        abbrevs[lang][type] = list(set([e.replace('\\.', '.') for e in abbrevs[lang][type]]))
 
-spaces_re = re.compile(r'\s+', re.UNICODE)
+spaces_re = compile(r'\s+', UNICODE)
 
 
 def generate_tokenizer(lang):
-    els = langs[lang]
-    token_re = re.compile(r'|'.join([langs[lang][e] for e in langs[lang]['order']]), re.UNICODE | re.IGNORECASE)
+    token_re = compile(r'|'.join([langs[lang][e] for e in langs[lang]['order']]), UNICODE | IGNORECASE)
     return token_re
 
 
@@ -80,7 +73,7 @@ def tokenize(tokenizer, paragraph):
             tokenizer.finditer(paragraph.strip())]  # spaces_re.sub(' ',paragraph.strip()))]
 
 
-def sentence_split(tokens, lang):
+def sentence_split(tokens, lang="sr"):
     boundaries = [0]
     for index in range(len(tokens) - 1):
         token = tokens[index][0]
@@ -117,88 +110,61 @@ def sentence_split(tokens, lang):
     return sents
 
 
-process = {'standard': lambda x, y, z: sentence_split(tokenize(x, y), z)}
-
-
-def to_text(sent):
-    text = ''
-    for idx, (token, start, end) in enumerate(sent):
-        if idx == 0 and token[0].isspace():
-            continue
-        text += token
-    return text + '\n'
-
-
-def represent_tomaz(input, par_id, conllu, bert, tagger):
-    output = ''
-    token_id = 0
-    sent_id = 0
-    if conllu:
-        output += '# newpar id = ' + str(par_id) + '\n'
-    for sent_idx, sent in enumerate(input):
-        sent_id += 1
-        token_id = 0
-        if conllu:
-            output += '# sent_id = ' + str(par_id) + '.' + str(sent_id) + '\n'
-            output += '# text = ' + to_text(sent)
-        for token_idx, (token, start, end) in enumerate(sent):
-            if not token[0].isspace():
-                token_id += 1
-                if conllu:
-                    SpaceAfter = True
-                    if len(sent) > token_idx + 1:
-                        SpaceAfter = sent[token_idx + 1][0].isspace()
-                    elif len(input) > sent_idx + 1:
-                        SpaceAfter = input[sent_idx + 1][0][0].isspace()
-                    if SpaceAfter:
-                        output += str(token_id) + '\t' + token + '\t_' * 8 + '\n'
-                    else:
-                        output += str(token_id) + '\t' + token + '\t_' * 7 + '\tSpaceAfter=No\n'
-                elif bert:
-                    output += token + ' '
-                elif tagger:
-                    output += token + '\n'
-                else:
-                    output += str(par_id) + '.' + str(sent_id) + '.' + str(token_id) + '.' + str(start + 1) + '-' + str(
-                        end) + '\t' + token + '\n'
-        if bert:
-            output = output.strip()
-        output += '\n'
+def tokenize_sentences(sentences, keepspace=False):
+    output = []
+    for sent in sentences:
+        for token, start, end in sent:
+            if not token[0].isspace() or keepspace:
+                output.append(token)
+        output.append("")
     return output
 
 
-def rel_tokenize(text, out_path, lang='sr', document=False, nonstandard=False, conllu=False, bert=False, tagger=True):
+def sr_tokenize(text, keepspace=False):
 
-    def nextpar(text):
-        for x in text:
-            yield x
+    tokenizer = generate_tokenizer('sr')
+    text = text.rstrip()
+    text = text.replace("<", "\n<").replace(">", ">\n")
+    text = text.split("\n")
+    tokens = []
 
-    if document:
-        conllu = True
-    mode = 'standard'
-    if nonstandard:
-        mode = 'nonstandard'
-    tokenizer = generate_tokenizer(lang)
-    par_id = 0
-
-    newtext = ''
-    parn = len(text)
-    # print(str(parn) + " paragraphs")
     for line in text:
         if line.strip() == '':
             continue
-        elif re.match(xml, line):
-            newtext += line + '\n'
+        elif match(xml, line):
+            tokens.append(line)
             continue
-        par_id += 1
-        if document:
-            if line.startswith('# newdoc id = '):
-                par_id = 0
-                sys.stdout.write(line)
-                continue
 
-        newtext += represent_tomaz(process[mode](tokenizer, line, lang), par_id, conllu, bert, tagger)
-        if bert:
-            newtext += '\n'
+        sentences = sentence_split(tokenize(tokenizer, line), 'sr')
+        tokens.extend(tokenize_sentences(sentences, keepspace))
 
-    return newtext.split('\n')
+    return tokens
+
+
+def gpt_tokenize(text):
+    if "$$" in text:
+        new = text.split("$$")
+    else:
+        tokens = sr_tokenize(text, keepspace=True)
+        new = []
+        last = ""
+        for token in tokens:
+            if token != " ":
+                if last == " ":
+                    new.append(last+token)
+                else:
+                    new.append(token)
+            last = token
+    return new
+
+
+tokenizer = generate_tokenizer('sr')
+
+
+def sentencize(text):
+    res = []
+    sentences = sentence_split(tokenize(tokenizer, text), 'sr')
+    for s in sentences:
+        xs = [x[0] for x in s]
+        res.append("".join(xs))
+    return res
