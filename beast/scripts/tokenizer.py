@@ -46,11 +46,11 @@ langs = {
         'space': r'\s+',
         'other': r'(.)\1*',
         'additional': r'[0-9][G|D|XL]',
-        'period': r'[1-9][0-9]{0,2}0\-ih',
-        'initials': r'[A-ZŠĐŽĆČАБВГДЂЕЖЗИЈКЛЉМНЊОПР СТЋУФХЦЧЏШ]\.',
+        'period': r'[1-9][0-9]{0,2}0[\-－﹣﹘―—–‒‑‐᠆־]ih',
+        'initials': r'[A-ZŠĐŽĆČАБВГДЂЕЖЗИЈКЛЉМНЊОПРСТЋУФХЦЧЏШ]\.',
         'order': (
-        'abbrev', 'period', 'num', 'url', 'htmlesc', 'tag', 'mail', 'initials','mention', 'hashtag', 'additional',
-        'emoticon', 'word', 'arrow', 'dot','space', 'other')
+        'abbrev', 'period', 'num', 'url', 'htmlesc', 'tag', 'mail', 'initials', 'mention', 'hashtag', 'additional',
+        'emoticon', 'word', 'arrow', 'dot', 'space', 'other')
     },
 
 }
@@ -114,7 +114,7 @@ def tokenize_sentences(sentences, keepspace=False):
     output = []
     for sent in sentences:
         for token, start, end in sent:
-            if not token[0].isspace() or keepspace:
+            if not token.isspace() or keepspace:
                 output.append(token)
         output.append("")
     return output
