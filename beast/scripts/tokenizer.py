@@ -46,7 +46,7 @@ langs = {
         'space': r'\s+',
         'other': r'(.)\1*',
         'additional': r'[0-9][G|D|XL]',
-        'period': r'[1-9][0-9]{0,2}0[\-－﹣﹘―—–‒‑‐᠆־]ih',
+        'period': r'[1-9][0-9]{0,2}0[\-－﹣﹘―—–‒‑‐᠆־][iи][hх]',
         'initials': r'[A-ZŠĐŽĆČАБВГДЂЕЖЗИЈКЛЉМНЊОПРСТЋУФХЦЧЏШ]\.',
         'order': (
         'abbrev', 'period', 'num', 'url', 'htmlesc', 'tag', 'mail', 'initials', 'mention', 'hashtag', 'additional',
