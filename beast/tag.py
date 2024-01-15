@@ -5,7 +5,7 @@ from tkinter import Tk, filedialog as fd
 
 
 def tag(src=None, model="", out_path=".", lexicons_path="", transliterate=True, lexiconmagic=True,
-        tokenize=True, MWU=False, stdout=False, quiet=False, onlyPOS=False, lemmat=True, lempos=False,
+        tokenize=False, MWU=False, stdout=False, quiet=False, onlyPOS=False, lemmat=True, lempos=False,
         modelnames=[], lemmafor=[], lemmatizers={}, probability=False, confidence=0.93):
     """
     :param src: string[] > list of files to be tagged (filepaths or urls) - default of NONE results in tkinter input

@@ -256,7 +256,7 @@ def tag_complex(par_path, lex_path, file_paths, out_path, tt_path, lexiconmagic=
                     taggedlines.append("\t" + newtags[model][i])
                 taggedlines.append("\n")
 
-        if tokenization:
+        if exclusion:
             finalines = ([])
             c = 0
             for i in range(0, len(taggedlines)+len(exclusion)):
